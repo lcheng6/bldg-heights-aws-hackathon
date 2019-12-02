@@ -22,3 +22,32 @@ create table "liang-gis-test".public.buildinginfotest (
     Border geometry,
     Estimated_Height float Default null
 );
+
+
+create table "liang-gis-test".public.buildingproto (
+    id serial primary key,
+    EGID TEXT,
+    Border geometry,
+);
+
+insert into buildingproto (EGID, Border)
+VALUES (
+    'DC00025306',
+    ST_GeomFromGeoJSON(
+        '{
+            "type": "Multipolygon",
+            "coordinates": [[-77, 38], [-77, 37], [-76, 37], [-76, 38]]
+        }'
+    )
+);
+
+insert into buildingproto (EGID, Border)
+VALUES (
+    'DC00025307',
+    ST_GeomFromGeoJSON(
+        '{
+            "type": "Multipolygon",
+            "coordinates": [[-77, 37], [-77, 36], [-76, 36], [-76, 37]]
+        }'
+    )
+);
