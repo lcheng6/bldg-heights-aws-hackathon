@@ -1,3 +1,5 @@
 
 *.las
-.vscode/settings.json
+
+.vscode/
+.venv/
