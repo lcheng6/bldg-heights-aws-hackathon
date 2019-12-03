@@ -11,6 +11,7 @@ create table buildinginfotraining (
     Estimated_Height float Default null
 );
 
+CREATE INDEX idx_building_info_traning_border ON buildinginfotraining USING gist (border);
 
 create table "liang-gis-test".public.buildinginfotest (
     id serial primary key,
@@ -51,3 +52,6 @@ VALUES (
         }'
     )
 );
+
+select * from buildingproto b
+where ST_Contain(ST_Point( -77.5, 37.5), b.Border)

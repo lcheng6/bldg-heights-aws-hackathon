@@ -9,7 +9,7 @@ def process_single_feature(feature):
     if ("ALTITUDE_M" in feature["properties"]):
         processed_feature["ALTITUDE_M"] = feature["properties"]["ALTITUDE_M"]
     processed_feature["geometry"] = feature["geometry"]
-    processed_feature["geometry"]["coordinates"] = processed_feature["geometry"]["coordinates"][0][0]
+    processed_feature["geometry"]["coordinates"] = processed_feature["geometry"]["coordinates"]
     return processed_feature
 
 def form_training_insert_statement(processed_feature, dbname):
@@ -27,7 +27,7 @@ VALUES (
     '{Shape_Length}',
     ST_GeomFromGeoJSON(
         '{{
-            "type": "Multipolygon",
+            "type": "{processed_feature["geometry"]["type"]}",
             "coordinates": {processed_feature["geometry"]["coordinates"]}
         }}'
     )
@@ -52,7 +52,7 @@ VALUES (
     '{Shape_Length}',
     ST_GeomFromGeoJSON(
         '{{
-            "type": "Multipolygon",
+            "type": "{processed_feature["geometry"]["type"]}",
             "coordinates": {processed_feature["geometry"]["coordinates"]}
         }}'
     )
