@@ -32,3 +32,6 @@ lidar_geodf = GeoDataFrame(lidar_df, crs=crs, geometry=geometry)
 
 # set correct coordinate reference system
 lidar_geodf.crs = {'init': 'epsg:6487'}
+
+# reproject to CRS 4326 (Same as building footrpint data) 
+lidar_geodf['geometry'] = lidar_geodf['geometry'].to_crs(epsg=4326)
