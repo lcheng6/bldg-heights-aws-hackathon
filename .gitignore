@@ -1,4 +1,6 @@
-
+*.docx
 *.las
 .vscode/settings.json
 .idea/
+.DS_Store
+venv/*
