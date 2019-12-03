@@ -6,7 +6,6 @@ from geopandas import GeoDataFrame
 from shapely.geometry import Point
 import requests
 
-
 # Read in LAS file
 inFile = File(sys.argv[1], mode = "r")
 
