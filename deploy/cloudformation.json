@@ -1,0 +1,158 @@
+{
+	"Description": "Hypsometer",
+  "Parameters" : {
+    "VPC" : {
+      "Default" : "vpc-ccaabdb4",
+      "Description" : "VPC ID",
+      "Type" : "String"
+    },
+    "AMIID": {
+      "Default" : "ami-0d7aedb64088e15c4",
+      "Description" : "AMI ID",
+      "Type" : "String"
+    },
+    "SUBNETLIST" : {
+      "Default" : "subnet-0db49069,subnet-15127f48,subnet-895b32a6",
+      "Description" : "subnets",
+      "Type" : "CommaDelimitedList"
+    },
+    "AZLIST" : {
+      "Default" : "us-east-1d,us-east-1c,us-east-1a",
+      "Type" : "CommaDelimitedList",
+      "Description" : "VPC ID"
+    }
+  },
+	"Resources": {
+		"IAMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "Path": "/",
+        "Policies": [],
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": ["ec2.amazonaws.com"]
+              },
+              "Action": ["sts:AssumeRole"]
+            }
+          ]
+        }
+      }
+		},
+		"InstanceProfile": {
+			"Type": "AWS::IAM::InstanceProfile",
+			"Properties": {
+				"Path": "/",
+				"Roles": [{
+					"Ref": "IAMRole"
+				}]
+			}
+		},
+		"ELBSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "ELB Security Group",
+				"VpcId": {"Ref":"VPC"},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "80",
+					"ToPort": "80",
+					"CidrIp": "0.0.0.0/0"
+				}]
+			}
+		},
+		"InstanceSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "Instance Security Group",
+				"VpcId": {"Ref":"VPC"},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "8080",
+					"ToPort": "8080",
+					"SourceSecurityGroupId": {
+						"Ref": "ELBSecurityGroup"
+					}
+				}]
+			}
+		},
+		"InstanceSGEgress": {
+			"Type": "AWS::EC2::SecurityGroupEgress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "ELBSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"FromPort": "8080",
+				"ToPort": "8080",
+				"CidrIp": "0.0.0.0/0"
+			},
+			"DependsOn": "InstanceSecurityGroup"
+		},
+		"DNS": {
+			"Type": "AWS::Route53::RecordSet",
+			"Properties": {
+				"HostedZoneName": "kl2tech.com.",
+				"Name": "hypsometer.kl2tech.com.",
+				"Type": "CNAME",
+				"TTL": "900",
+				"ResourceRecords": [{
+					"Fn::GetAtt": ["ELB", "DNSName"]
+				}]
+			}
+		},
+		"ELB": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"Properties": {
+				"Subnets": {"Ref":"SUBNETLIST"},
+				"SecurityGroups": [{
+					"Ref": "ELBSecurityGroup"
+				}],
+				"Scheme": "internal",
+				"Listeners": [{
+					"LoadBalancerPort": "80",
+					"Protocol": "HTTP",
+					"InstancePort": "8080",
+					"InstanceProtocol": "HTTP"
+				}],
+				"HealthCheck": {
+					"HealthyThreshold": "2",
+					"Interval": "10",
+					"Target": "HTTP:8080/health/check",
+					"Timeout": "2",
+					"UnhealthyThreshold": "2"
+				},
+				"ConnectionDrainingPolicy": {
+					"Enabled": "true",
+					"Timeout": "60"
+				},
+				"CrossZone": "true"
+			}
+		},
+    "LaunchConfig": {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Properties" : {
+          "ImageId" : {"Ref": "AMIID"},
+          "InstanceType" : "t2.micro",
+          "LaunchConfigurationName" : "HypsometerLC"
+        }
+    },
+    "ASG": {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+          "AutoScalingGroupName" : "Hypsometer-ASG",
+          "AvailabilityZones" : {"Ref":"AZLIST"},
+          "DesiredCapacity" : 1,
+          "HealthCheckGracePeriod": 300,
+          "HealthCheckType": "ELB",
+          "LaunchConfigurationName" : {"Ref":"LaunchConfig"},
+          "LoadBalancerNames" : [{"Ref": "ELB"}],
+          "MaxSize" : 1,
+          "MinSize" : 1
+        }
+}
+	}
+
+}
