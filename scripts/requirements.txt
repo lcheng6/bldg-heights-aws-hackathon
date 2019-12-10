@@ -2,3 +2,4 @@ pandas
 laspy
 numpy
 geopandas
+requests

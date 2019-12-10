@@ -1,0 +1,4 @@
+env/
+
+#ignore any temporary LIDAR file
+*.las
