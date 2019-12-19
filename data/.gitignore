@@ -1,0 +1,3 @@
+#these las convered sql statements are large > 400MB in size.  best to keep them from being loaded into
+#git
+las-*-converted.sql
