@@ -34,6 +34,7 @@ def convert_las_data_to_sql_statement(keyname, max_rows_per_iteration = 10000):
     lassqlfile = f"/tmp/{keysequencenum}.sql"
     inFile = File(lasdatafile)
     row_count = 0
+
     lidar_points = np.array((inFile.X,inFile.Y,inFile.Z,inFile.intensity,
                              inFile.classification, inFile.gps_time,
                              inFile.overlap, inFile.scan_angle,
@@ -49,7 +50,6 @@ def convert_las_data_to_sql_statement(keyname, max_rows_per_iteration = 10000):
     sql_lines_array = []
     sql_preamble = f"insert into lidar_values (ground_coord, z, intensity, classification, gps_time, overlap, scan_angle, synthetic, withheld, dcoctocode) VALUES"
 
-    sql_lines_array.append(sql_preamble)
     for lidar_idx_start in range(0, lidar_df_total_length, max_rows_per_iteration):
         lidar_idx_end = lidar_idx_start + max_rows_per_iteration
         lidar_idx_end = min(lidar_idx_end, lidar_df_total_length)
@@ -67,13 +67,13 @@ def convert_las_data_to_sql_statement(keyname, max_rows_per_iteration = 10000):
             row_count+=1
             X, Y, Z, intensity, classification, gps_time, overlap, scan_angle, x, y, z, synthetic, withheld, geom = frame.to_list()
             lat, long, z = geom.x, geom.y, geom.z #  Replace the old CRS values and move this over.
-            items = [f"'POINT({lat} {long} {z})'::geometry", z, intensity, classification, gps_time, overlap, scan_angle, synthetic, withheld, keysequencenum]
+            items = [f"'POINT({lat} {long} {z})'::geometry", z, intensity, int(classification), gps_time, overlap, scan_angle, int(synthetic), int(withheld), int(keysequencenum)]
             items_str = map(str, items)
-            sql_line = ', '.join(items_str)
+            sql_line = '(' + ', '.join(items_str) + ')'
             sql_lines_array.append(sql_line);
 
 
-    sql_complete_statement = ",\n".join(sql_lines_array)
+    sql_complete_statement = sql_preamble + "\n" + (",\n".join(sql_lines_array)) + ';'
     text_file = open(lassqlfile, "w")
     text_file.write(sql_complete_statement)
     text_file.close()

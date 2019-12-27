@@ -15,5 +15,8 @@ unset AWS_PROFILE
 
 #load my access credential into the docker's environment variables.
 #in real AWS batch run, Boto3 will read directly from the assigned IAM Role
-docker run -d -t -i -e AWS_ACCESS_KEY_ID=$aws_access_key_id -e AWS_SECRET_ACCESS_KEY=$aws_secret_access_key "$dockerimage" /bin/bash
+workingdir=$(pwd)
+docker run -d -t -i \
+  --mount type=bind,source="${workingdir}/dockermount_tmp",target=/tmp \
+  -e AWS_ACCESS_KEY_ID=$aws_access_key_id -e AWS_SECRET_ACCESS_KEY=$aws_secret_access_key "$dockerimage" /bin/bash
 docker exec -it $(docker ps --format "{{.Names}}") /bin/bash
