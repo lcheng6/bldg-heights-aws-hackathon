@@ -1,4 +1,4 @@
-
+drop table if exists lidar_values;
 create table lidar_values
 (
     id serial primary key,
@@ -9,7 +9,10 @@ create table lidar_values
     classification float not null,
     gps_time float not null,
     overlap float not null,
-    scan_angle float not null
+    scan_angle float not null,
+    synthetic float not null,
+    withheld float not null,
+    dcoctocode integer not null
 );
 
 -- --    80.41027603367428 -71.46076782128519 5577
