@@ -20,5 +20,4 @@ unset AWS_PROFILE
 workingdir=$(pwd)
 docker run --mount type=bind,source="${workingdir}/dockermount_tmp",target=/tmp \
   -e AWS_ACCESS_KEY_ID=$aws_access_key_id -e AWS_SECRET_ACCESS_KEY=$aws_secret_access_key "$dockerimage" \
-  --memory="2g" --memory-swap="4g" \
   --laskey "1120.las"
