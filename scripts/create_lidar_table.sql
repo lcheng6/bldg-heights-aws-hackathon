@@ -20,8 +20,6 @@ create table lidar_values
 -- load some sample values in just to make sure format is correct and then unload the table
 
 
-truncate lidar_values;
-
 insert into lidar_values (ground_coord, z, intensity, classification, gps_time, overlap, scan_angle, synthetic, withheld, dcoctocode) VALUES
 ('POINT(-77.12223228002982 38.92961481462707 55.120000000000005)'::geometry, 55.120000000000005, 16750, 2, 207012413.10626054, 1.0, 7.0, 0, 0, 1120),
 ('POINT(-77.12223965465381 38.92961102341192 55.18)'::geometry, 55.18, 8442.0, 2, 207012413.1062672, 1.0, 7.0, 0, 0, 1120),
@@ -31,3 +29,5 @@ insert into lidar_values (ground_coord, z, intensity, classification, gps_time, 
 ('POINT(-77.12220425100665 38.929612591864355 55.370000000000005)'::geometry, 55.370000000000005, 27604.0, 2, 207012413.12900543, 1.0, 7.0, 0, 0, 1120),
 ('POINT(-77.12221208648803 38.92960852991893 55.26)'::geometry, 55.26, 14204.0, 2.0, 207012413.12901235, 1, 7.0, 0, 0, 1120),
 ('POINT(-77.12221946111244 38.929604738705066 55.300000000000004)'::geometry, 55.300000000000004, 11122.0, 2, 207012413.12901902, 1.0, 7.0, 0, 0, 1120);
+
+truncate lidar_values;
