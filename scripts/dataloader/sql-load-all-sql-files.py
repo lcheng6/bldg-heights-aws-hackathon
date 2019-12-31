@@ -17,10 +17,11 @@ def download_las_data_to_s3_bucket(keyname, s3bucket, s3prefix):
     return True
 
 def mainfunction():
-    laskeynames = lasutility.get_las_file_names();
+    laskeynames = lasutility.get_las_file_names()
+    laskeynames = laskeynames[0, 1, 2]
     for laskeyname in laskeynames:
         keysequencenum = laskeyname.split('.')[0] #get the #### of the file "####.las"
         sqlfilename = f"{keysequencenum}.sql"
-        download_sql_file_from_s3(sqlfilename)
+        download_sql_file_from_s3(sqlfilename, "additional-test-datasets", "bldg-height/las-sql-statements")
 
 mainfunction()
