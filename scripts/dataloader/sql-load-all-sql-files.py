@@ -1,17 +1,17 @@
 import lasutility
-# import boto3
+import boto3
+import os
+
 
 def download_sql_file_from_s3(sqlfilekeyname):
-    print (sqlfilekeyname)
-    pass
-    # s3_client = boto3.s3
+    return download_file_from_s3_bucket(sqlfilekeyname, "additional-test-datasets", "bldg-height/las-sql-statements")
 
-def download_las_data_to_s3_bucket(keyname, s3bucket, s3prefix):
-    s3_client = boto3.client('s3')
-    local_path = f"./lasdata/{keyname}"
+def download_file_from_s3_bucket(keyname, s3bucket, s3prefix):
+    s3 = boto3.resource('s3')
+    local_path = f"/tmp/{keyname}"
     object_name = f"{s3prefix}/{keyname}"
     try:
-        response = s3_client.upload_file(local_path, s3bucket, object_name)
+        response = s3.meta.client.download_file(s3bucket, object_name, local_path)
     except ClientError as e:
         return False
     return True
