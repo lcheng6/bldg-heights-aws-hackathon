@@ -10,7 +10,6 @@ def load_database_params():
         data = json.load(json_file)
     return data
 
-
 def remove_downloaded_sql_file(sqlfilename):
     local_path = f"/tmp/{sqlfilename}"
     os.remove(local_path)
