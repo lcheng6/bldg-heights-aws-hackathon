@@ -5,7 +5,7 @@ import json
 
 
 def download_sql_file_from_s3(sqlfilekeyname):
-    return download_file_from_s3_bucket(sqlfilekeyname, "additional-test-datasets", "bldg-height/las-sql-statements")
+    return download_file_from_s3_bucket(sqlfilekeyname, "additional-test-datasets", "bldg-height/las-sql-statements-v2-1")
 
 def download_file_from_s3_bucket(keyname, s3bucket, s3prefix):
     s3 = boto3.resource('s3')
@@ -21,7 +21,7 @@ def load_file_into_sql_server(sqlfilename):
     local_path = f"/tmp/{sqlfilename}"
 def mainfunction():
     laskeynames = lasutility.get_las_file_names()
-    laskeynames = laskeynames[0:2]
+    laskeynames = laskeynames[0:1]
     for laskeyname in laskeynames:
         keysequencenum = laskeyname.split('.')[0] #get the #### of the file "####.las"
         sqlfilename = f"{keysequencenum}.sql"
