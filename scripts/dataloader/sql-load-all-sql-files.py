@@ -30,7 +30,7 @@ def execute_downloaded_sql_file(sqlfilename):
     return output
 
 def download_sql_file_from_s3(sqlfilekeyname):
-    return download_file_from_s3_bucket(sqlfilekeyname, "additional-test-datasets", "bldg-height/las-sql-statements-v2-1")
+    return download_file_from_s3_bucket(sqlfilekeyname, "additional-test-datasets", "bldg-height/las-sql-statements")
 
 def download_file_from_s3_bucket(keyname, s3bucket, s3prefix):
     s3 = boto3.resource('s3')
