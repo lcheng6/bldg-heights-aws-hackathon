@@ -26,12 +26,13 @@ def cleanup_las_data(keyname):
     lasdatafile = f"/tmp/{keyname}"
     os.remove(lasdatafile)
 
-def convert_las_data_to_sql_statement(keyname, max_rows_per_iteration = 10000):
+def convert_las_data_to_sql_statement(keyname, max_rows_per_iteration = 50000):
     #we need to partition the GeoDataFrame.to_crs function to 10,000 blocks, otherwise jupyter seem to have memory errors
     #might need to come back to this and recheck
     lasdatafile = f"/tmp/{keyname}"
     keysequencenum = keyname.split('.')[0] #get the #### of the file "####.las"
     lassqlfile = f"/tmp/{keysequencenum}.sql"
+    lascsvfile = f"/tmp/{keysequencenum}.csv"
     inFile = File(lasdatafile)
     row_count = 0
 
@@ -48,7 +49,11 @@ def convert_las_data_to_sql_statement(keyname, max_rows_per_iteration = 10000):
 
     lidar_df_total_length = lidar_df.shape[0]
     sql_lines_array = []
+    csv_lines_array = []
     sql_preamble = f"insert into lidar_values (ground_coord, z, intensity, classification, gps_time, overlap, scan_angle, synthetic, withheld, dcoctocode) VALUES"
+
+    sql_file = open(lassqlfile, "w")
+    csv_file = open(lascsvfile, "w")
 
     for lidar_idx_start in range(0, lidar_df_total_length, max_rows_per_iteration):
         lidar_idx_end = lidar_idx_start + max_rows_per_iteration
@@ -70,13 +75,22 @@ def convert_las_data_to_sql_statement(keyname, max_rows_per_iteration = 10000):
             items = [f"'POINT({lat} {long} {z})'::geometry", z, intensity, int(classification), gps_time, overlap, scan_angle, int(synthetic), int(withheld), int(keysequencenum)]
             items_str = map(str, items)
             sql_line = '(' + ', '.join(items_str) + ')'
-            sql_lines_array.append(sql_line);
+            sql_lines_array.append(sql_line)
 
+            items_str = map(str, items)
+            csv_line = ', '.join(items_str)
+            csv_lines_array.append(csv_line)
 
-    sql_complete_statement = sql_preamble + "\n" + (",\n".join(sql_lines_array)) + ';'
-    text_file = open(lassqlfile, "w")
-    text_file.write(sql_complete_statement)
-    text_file.close()
+        sql_complete_statement = sql_preamble + "\n" + (",\n".join(sql_lines_array)) + ';' + "\n"
+        sql_file.write(sql_complete_statement)
+
+        csv_complete_statement = "\n".join(csv_lines_array) + "\n"
+        csv_file.write(csv_complete_statement)
+        #reset the sql_lines_array
+        sql_lines_array = []
+        csv_lines_array = []
+
+    sql_file.close()
 
     return row_count # return the number of entries created
 
@@ -98,7 +112,9 @@ def las_to_sql(laskeyname):
 
     keysequencenum = laskeyname.split('.')[0] #get the #### of the file "####.las"
     sqlfilename = f"{keysequencenum}.sql"
-    upload_las_data_to_s3_bucket(sqlfilename, "additional-test-datasets", "bldg-height/las-sql-statements-v2")
+    csvfilename = f"{keysequencenum}.csv"
+    upload_las_data_to_s3_bucket(sqlfilename, "additional-test-datasets", "bldg-height/las-sql-statements-v2-1")
+    upload_las_data_to_s3_bucket(csvfilename, "additional-test-datasets", "bldg-height/las-csv-statements-v2-1")
 
 if __name__ == "__main__":
     las_to_sql(args.laskey)

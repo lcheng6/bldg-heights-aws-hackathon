@@ -3,6 +3,22 @@ import boto3
 import os
 import json
 
+def load_database_params():
+    #assume the database param file is ./databaseparams.json
+    data = {}
+    with open('./databaseparams.json') as json_file:
+        data = json.load(json_file)
+    return data
+
+def remove_downloaded_sql_file(sqlfilename):
+    local_path = f"/tmp/{sqlfilename}"
+    os.remove(local_path)
+
+def executed_downloaded_sql_file(sqlfilename):
+    dbparams = load_database_params();
+    local_path = f"/tmp/{sqlfilename}"
+    psql_statment = f"PGPASSWORD=${dbparams.dbpassword} psql -h {dbparams.dbendpoint} -U {dbparams.dbname} -p 5432 {dbparams.dbname} -f {local_path}"
+    print(psql_statment)
 
 def download_sql_file_from_s3(sqlfilekeyname):
     return download_file_from_s3_bucket(sqlfilekeyname, "additional-test-datasets", "bldg-height/las-sql-statements-v2-1")
@@ -19,6 +35,7 @@ def download_file_from_s3_bucket(keyname, s3bucket, s3prefix):
 
 def load_file_into_sql_server(sqlfilename):
     local_path = f"/tmp/{sqlfilename}"
+
 def mainfunction():
     laskeynames = lasutility.get_las_file_names()
     laskeynames = laskeynames[0:1]
