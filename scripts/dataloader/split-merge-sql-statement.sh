@@ -19,7 +19,7 @@ done
 
 cat x* > /tmp/$orig_sql_file
 
-rm *
+rm -f *
 
 popd
 
