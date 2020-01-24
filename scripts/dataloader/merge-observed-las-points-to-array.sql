@@ -1,0 +1,1 @@
+-- https://stackoverflow.com/questions/533256/concatenate-multiple-rows-in-an-array-with-sql-on-postgresql
