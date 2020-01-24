@@ -21,3 +21,6 @@ create table lidarbuildingmatchtraining as
            bldg.border as border, las.ground_coord as las_grnd_coord
     from buildinginfotraining bldg, lidar_values las
     where st_within(las.ground_coord, bldg.border);
+
+
+-- Select the data points from buildinginfotraining

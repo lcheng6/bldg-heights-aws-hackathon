@@ -9,7 +9,7 @@ import requests
 url = "https://dc-lidar-2018.s3.amazonaws.com/Classified_LAS/2222.las"
 r = requests.get(url)
 
-with open("../data/las-2222.las", 'wb') as f:
+with open("../../data/las-2222.las", 'wb') as f:
     f.write(r.content)
 
 #Read in LAS file
