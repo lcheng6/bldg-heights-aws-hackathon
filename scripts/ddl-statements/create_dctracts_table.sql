@@ -1,4 +1,4 @@
-create table "liang-gis-test".public.buildinginfotest (
+create table "lidarbuilding".public.dctracts  (
     id serial primary key,
     STATEFP TEXT,
     COUNTYFP TEXT,
