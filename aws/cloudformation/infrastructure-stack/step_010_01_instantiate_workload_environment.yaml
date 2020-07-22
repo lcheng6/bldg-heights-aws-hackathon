@@ -30,6 +30,12 @@ Conditions:
 
 Resources:
 
+  #S3BucketsTemplate creates the following S3 Buckets:
+  # Local CloudTrail bucket, used for local storage of Cloudtrail, useful for local account's analysis of cloudtrail.  Also important to pass some NIST checks
+  # S3 Server Logging bucket, used for storing S3 activities.  All S3 buckets created by this template will output their s3 activities log to this bucket
+  #   Detailed information on S3 Server logging is available here: https://docs.aws.amazon.com/AmazonS3/latest/dev/ServerLogs.html
+  # FYI, S3 has 2 logging options: S3 Server logging, which is stored in the S3 Server Logging bucket, and S3 object logging, which is part of cloudtrail.
+  # in the context of baseline workflow account creation, both optoins are turned on
   S3BucketsTemplate:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -40,11 +46,52 @@ Resources:
         CFTemplateS3Path: !Ref CFTemplateS3Path
         Environment: !Ref Environment
 
+  #LoggingAndAuditTemplate creates cloudtrail and some cloudwatch logs groups as well as some dependent resources
+  # It does the following:
+  #  Turns on local cloudtrail and stores the cloudtrail into the local s3 cloudtrail bucket, and concurrently exports
+  #  cloudtrail into a cloudwatch log group.  A custom KMS Key is created to locally encrypt the cloudtrail log
+  #  VPC flow log is created at the VPC level
+  LoggingAndAuditTemplate:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - S3BucketsTemplate
+      - VPCTemplate
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_020_03_cloudtrail_and_logging.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: !Ref Environment
+        LocalAccountLoggingS3BucketName: !GetAtt S3BucketsTemplate.Outputs.S3WorkflowCloudTrailBucket
+        VPCID: !GetAtt VPCTemplate.Outputs.WorkflowVPC
+
+  # VPC Template
+  # Creates the VPC, subnets, route table, private endpoints, and a basic set of security groups necessary to do
+  # work in the VPC
   VPCTemplate:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
         !Sub ${CFTemplateS3Path}/step_020_01_workflow_vpc.yaml
+      Parameters:
+        WFName: !Ref WFName
+        Environment: !Ref Environment
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+
+  #Add Security Inspector stack
+
+  # IAMRoleTemplate creates a basic set of roles
+  # CommDebugEC2Role: EC2 roles made sepcifically for ping targets.  It also allow us to use SSM to log into
+  #   these machine via web console instead of using SSH
+  # CrossAccountEC2ReadFromShrsrvRole: Allow lambda functions in shared services to call EC2 Read only actions on this account
+  #   the primary motiviation for creating this role is to allow SharedServices cross account VPCFlowLog decorators to correlate
+  #   ENI IDs to their security group ids and security group names
+  IAMRoleTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_020_04_iam_roles.yaml
       Parameters:
         WFName: !Ref WFName
         Environment: !Ref Environment

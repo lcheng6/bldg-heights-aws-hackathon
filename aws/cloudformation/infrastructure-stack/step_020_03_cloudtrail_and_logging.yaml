@@ -18,10 +18,7 @@ Parameters:
   CFTemplateS3Path:
     Type: String
 
-  Env:
-    Type: String
-
-  Region:
+  Environment:
     Type: String
 
   LocalAccountLoggingS3BucketName:
@@ -44,9 +41,9 @@ Resources:
         - '-'
         - - log
           - !Ref WFName
-          - !Ref Env
+          - !Ref Environment
           - cloudtrail
-          - !Ref Region
+          - !Ref AWS::Region
       RetentionInDays: 3653 #FedRAMP requirement 7 years, cloud trail is also exported to S3
 
   CloudTrailRole:
@@ -109,7 +106,7 @@ Resources:
                       - _CloudTrail_
                       - !Ref 'AWS::Region'
                       - '*'
-      RoleName: !Sub 'role.${WFName}.${Env}.cloudtrail'
+      RoleName: !Sub 'role.infranetsec.${WFName}.${Environment}.cloudtrail'
 
   CloudTrailTopic:
     Type: AWS::SNS::Topic
@@ -119,9 +116,9 @@ Resources:
         - '-'
         - - topic
           - !Ref WFName
-          - !Ref Env
+          - !Ref Environment
           - cloudtrail
-          - !Ref Region
+          - !Ref AWS::Region
       Subscription:
         - Endpoint: !GetAtt CloudTrailSQS.Arn
           Protocol: sqs
@@ -169,9 +166,9 @@ Resources:
         - '-'
         - - queue
           - !Ref WFName
-          - !Ref Env
+          - !Ref Environment
           - cloudtrail
-          - !Ref Region
+          - !Ref AWS::Region
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt CloudTrailDeadLetterSQS.Arn
         maxReceiveCount: 3
@@ -183,9 +180,9 @@ Resources:
         - '-'
         - - dlqueue
           - !Ref WFName
-          - !Ref Env
+          - !Ref Environment
           - cloudtrail
-          - !Ref Region
+          - !Ref AWS::Region
 
   CloudTrailSQSPolicy:
     Type: AWS::SQS::QueuePolicy
@@ -290,16 +287,16 @@ Resources:
             - '-'
             - - trail
               - !Ref WFName
-              - !Ref Env
+              - !Ref Environment
               - cloudtrail
-              - !Ref Region
+              - !Ref AWS::Region
       TrailName: !Join
         - '-'
         - - trail
           - !Ref WFName
-          - !Ref Env
+          - !Ref Environment
           - cloudtrail
-          - !Ref Region
+          - !Ref AWS::Region
 
   VpcFlowLog:
     Type: AWS::EC2::FlowLog
@@ -309,9 +306,9 @@ Resources:
 #        - '-'
 #        - - flowlog
 #          - !Ref WFName
-#          - !Ref Env
+#          - !Ref Environment
 #          - vpcflowlog
-#          - !Ref Region
+#          - !Ref AWS::Region
       LogDestination: !GetAtt VpcFlowLogsLogGroup.Arn
       LogDestinationType: cloud-watch-logs
       ResourceId: !Ref VPCID
@@ -326,9 +323,9 @@ Resources:
         - '-'
         - - log
           - !Ref WFName
-          - !Ref Env
+          - !Ref Environment
           - vpcflowlog
-          - !Ref Region
+          - !Ref AWS::Region
       RetentionInDays: 365 #Local storage for 1 yr, flow log is also exported to ShrSrv ES
 
   VpcFlowLogsRole:
@@ -348,7 +345,7 @@ Resources:
         - '.'
         - - role
           - !Ref WFName
-          - !Ref Env
+          - !Ref Environment
           - vpcflowlog
       Policies:
         - PolicyName: root
