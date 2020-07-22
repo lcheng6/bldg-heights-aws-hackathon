@@ -8,7 +8,7 @@ Parameters:
     Type: String
     Default: shrsrv
 
-  Env:
+  Environment:
     Type: String
     Default: prod
 
@@ -89,7 +89,7 @@ Resources:
     Properties:
       IamInstanceProfile:
         Fn::ImportValue:
-          !Sub "instprof-${WFName}-${Env}-commdebug"
+          !Sub "instprof-${WFName}-${Environment}-commdebug"
       ImageId:
         Fn::FindInMap:
           - RegionalAMI
@@ -102,7 +102,7 @@ Resources:
           DeviceIndex: 0
           GroupSet:
             - Fn::ImportValue:
-                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+                !Sub "sg-${WFName}-${Environment}-commdebug-${Region}"
           SubnetId:
             Fn::ImportValue:
               !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet1, ExportName]
@@ -120,7 +120,7 @@ Resources:
         - Key: Type
           Value: ec2
         - Key: Name
-          Value: !Sub "ec2.${WFName}.${Env}.workflowcommdebug.${Region}.az1"
+          Value: !Sub "ec2.${WFName}.${Environment}.workflowcommdebug.${Region}.az1"
         - Key: OS
           Value: Amazon Linux 2
         - Key: Function
@@ -131,7 +131,7 @@ Resources:
     Properties:
       IamInstanceProfile:
         Fn::ImportValue:
-          !Sub "instprof-${WFName}-${Env}-commdebug"
+          !Sub "instprof-${WFName}-${Environment}-commdebug"
       ImageId:
         Fn::FindInMap:
           - RegionalAMI
@@ -144,7 +144,7 @@ Resources:
           DeviceIndex: 0
           GroupSet:
             - Fn::ImportValue:
-                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+                !Sub "sg-${WFName}-${Environment}-commdebug-${Region}"
           SubnetId:
             Fn::ImportValue:
               !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet2, ExportName]
@@ -162,7 +162,7 @@ Resources:
         - Key: Type
           Value: ec2
         - Key: Name
-          Value: !Sub "ec2.${WFName}.${Env}.workflowcommdebug.${Region}.az2"
+          Value: !Sub "ec2.${WFName}.${Environment}.workflowcommdebug.${Region}.az2"
         - Key: OS
           Value: Amazon Linux 2
         - Key: Function
@@ -173,7 +173,7 @@ Resources:
     Properties:
       IamInstanceProfile:
         Fn::ImportValue:
-          !Sub "instprof-${WFName}-${Env}-commdebug"
+          !Sub "instprof-${WFName}-${Environment}-commdebug"
       ImageId:
         Fn::FindInMap:
           - RegionalAMI
@@ -186,7 +186,7 @@ Resources:
           DeviceIndex: 0
           GroupSet:
             - Fn::ImportValue:
-                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+                !Sub "sg-${WFName}-${Environment}-commdebug-${Region}"
           SubnetId:
             Fn::ImportValue:
               !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet3, ExportName]
@@ -204,7 +204,7 @@ Resources:
         - Key: Type
           Value: ec2
         - Key: Name
-          Value: !Sub "ec2.${WFName}.${Env}.workflowcommdebug.${Region}.az3"
+          Value: !Sub "ec2.${WFName}.${Environment}.workflowcommdebug.${Region}.az3"
         - Key: OS
           Value: Amazon Linux 2
         - Key: Function
@@ -217,7 +217,7 @@ Resources:
     Properties:
       IamInstanceProfile:
         Fn::ImportValue:
-          !Sub "instprof-${WFName}-${Env}-commdebug"
+          !Sub "instprof-${WFName}-${Environment}-commdebug"
       ImageId:
         Fn::FindInMap:
           - RegionalAMI
@@ -230,7 +230,7 @@ Resources:
           DeviceIndex: 0
           GroupSet:
             - Fn::ImportValue:
-                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+                !Sub "sg-${WFName}-${Environment}-commdebug-${Region}"
           SubnetId:
             Fn::ImportValue:
               !FindInMap [WorkflowPrimarySubnets, ProxySubnet1, ExportName]
@@ -248,7 +248,7 @@ Resources:
         - Key: Type
           Value: ec2
         - Key: Name
-          Value: !Sub "ec2.${WFName}.${Env}.proxycommdebug.${Region}.az1"
+          Value: !Sub "ec2.${WFName}.${Environment}.proxycommdebug.${Region}.az1"
         - Key: OS
           Value: Amazon Linux 2
         - Key: Function
@@ -259,7 +259,7 @@ Resources:
     Properties:
       IamInstanceProfile:
         Fn::ImportValue:
-          !Sub "instprof-${WFName}-${Env}-commdebug"
+          !Sub "instprof-${WFName}-${Environment}-commdebug"
       ImageId:
         Fn::FindInMap:
           - RegionalAMI
@@ -272,7 +272,7 @@ Resources:
           DeviceIndex: 0
           GroupSet:
             - Fn::ImportValue:
-                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+                !Sub "sg-${WFName}-${Environment}-commdebug-${Region}"
           SubnetId:
             Fn::ImportValue:
               !FindInMap [WorkflowPrimarySubnets, ProxySubnet2, ExportName]
@@ -290,7 +290,7 @@ Resources:
         - Key: Type
           Value: ec2
         - Key: Name
-          Value: !Sub "ec2.${WFName}.${Env}.proxycommdebug.${Region}.az2"
+          Value: !Sub "ec2.${WFName}.${Environment}.proxycommdebug.${Region}.az2"
         - Key: OS
           Value: Amazon Linux 2
         - Key: Function
@@ -301,7 +301,7 @@ Resources:
     Properties:
       IamInstanceProfile:
         Fn::ImportValue:
-          !Sub "instprof-${WFName}-${Env}-commdebug"
+          !Sub "instprof-${WFName}-${Environment}-commdebug"
       ImageId:
         Fn::FindInMap:
           - RegionalAMI
@@ -314,7 +314,7 @@ Resources:
           DeviceIndex: 0
           GroupSet:
             - Fn::ImportValue:
-                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+                !Sub "sg-${WFName}-${Environment}-commdebug-${Region}"
           SubnetId:
             Fn::ImportValue:
               !FindInMap [WorkflowPrimarySubnets, ProxySubnet3, ExportName]
@@ -332,7 +332,7 @@ Resources:
         - Key: Type
           Value: ec2
         - Key: Name
-          Value: !Sub "ec2.${WFName}.${Env}.proxycommdebug.${Region}.az3"
+          Value: !Sub "ec2.${WFName}.${Environment}.proxycommdebug.${Region}.az3"
         - Key: OS
           Value: Amazon Linux 2
         - Key: Function

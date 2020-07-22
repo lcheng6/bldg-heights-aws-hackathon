@@ -259,6 +259,92 @@ Resources:
         Ref: WorkflowSubnetRouteTable3
   # ---- End Section  Route Table and Route Table Association ------ #
 
+  #----- Begin Section Internet Gateway Nat Gateway Endpoint ---------#
+  WorkflowInternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  WorkflowInternetGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      InternetGatewayId: !Ref WorkflowInternetGateway
+      VpcId: !Ref WorkflowVPC
+
+  WorkflowNatGateway1EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: WorkflowInternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  WorkflowNatGateway1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+          - WorkflowNatGateway1EIP
+          - AllocationId
+      SubnetId: !Ref ProxySubnet1
+#      Tags:
+#        - Key: Name
+#          Value: !Join [ "-", [ !Ref VPCName, "NAT-Gateway1"]]
+
+  WorkflowSubnet1RouteNAT1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: WorkflowSubnetRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: WorkflowNatGateway1
+
+  WorkflowSubnet2RouteNAT1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: WorkflowSubnetRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: WorkflowNatGateway1
+
+  WorkflowSubnet3RouteNAT1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: WorkflowSubnetRouteTable3
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: WorkflowNatGateway1
+
+  ProxySubnetRouteTable1Route:
+    Type: AWS::EC2::Route
+    DependsOn: WorkflowInternetGateway
+    Properties:
+      RouteTableId:
+        Ref: ProxySubnetRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: WorkflowInternetGateway
+
+  ProxySubnetRouteTable2Route:
+    Type: AWS::EC2::Route
+    DependsOn: WorkflowInternetGateway
+    Properties:
+      RouteTableId:
+        Ref: ProxySubnetRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: WorkflowInternetGateway
+
+  ProxySubnetRouteTable3Route:
+    Type: AWS::EC2::Route
+    DependsOn: WorkflowInternetGateway
+    Properties:
+      RouteTableId:
+        Ref: ProxySubnetRouteTable3
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: WorkflowInternetGateway
+  #----- End Section Internet Gateway Nat Gateway Endpoint ---------#
+  
   #----- Begin Section VPC Endpoint ---------#
   S3Endpoint:
     Type: 'AWS::EC2::VPCEndpoint'
@@ -304,7 +390,7 @@ Resources:
 #        - - com.amazonaws.
 #          - !Ref 'AWS::Region'
 #          - .dynamodb
-#      VpcId: !Ref SharedServicesVPC
+#      VpcId: !Ref WorkflowVPC
 #----- End Section VPC Endpoint ---------#
 
   # SecurityGroupsTemplate creates a basic set of security groups:
