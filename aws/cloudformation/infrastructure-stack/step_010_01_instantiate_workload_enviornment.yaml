@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Shared Services Template
+
+Parameters:
+  WFName:
+    Type: String
+    Default: shrsrv
+
+  CFTemplateS3Path:
+    Type: String
+    Default: https://s3.amazonaws.com/s3.shrsrv.p.cf.useast1/sharedservices-useast1-cf-templates
+
+  Env:
+    Type: String
+    Default: prod
+
+  Region:
+    Type: String
+    Default: useast1
+
+  CreateCommDebug:
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+
+  CloudFormationS3Bucket:
+    Type: String
+    Default: s3.shrsrv.p.cf.useast1
+
+Conditions:
+  CreateCommDebugCondition: !Equals [ !Ref CreateCommDebug, true ]
+
+Resources:
+
+  VPCTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_020_01_instantiate_shared_services_vpc.yaml
+      Parameters:
+        WFName: !Ref WFName
+        Region: !Ref Region
+        Env: !Ref Env
+        CFTemplateS3Path: !Ref CFTemplateS3Path
