@@ -1,0 +1,6 @@
+[
+  {
+    "ParameterKey": "CFTemplateS3Path",
+    "ParameterValue": "https://s3.amazonaws.com/cf-templates-18oesyyko5gbp-us-east-1/infrastructure-stack/"
+  }
+]

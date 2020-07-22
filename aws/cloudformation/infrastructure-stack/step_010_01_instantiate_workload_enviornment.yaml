@@ -4,21 +4,13 @@ Description: >-
   Shared Services Template
 
 Parameters:
-  WFName:
-    Type: String
-    Default: shrsrv
-
   CFTemplateS3Path:
     Type: String
-    Default: https://s3.amazonaws.com/s3.shrsrv.p.cf.useast1/sharedservices-useast1-cf-templates
+    Default: https://s3.amazonaws.com/cf-templates-j3atw72be18l-us-east-1/sharedservices-useast1-cf-templates
 
-  Env:
+  Environment:
     Type: String
     Default: prod
-
-  Region:
-    Type: String
-    Default: useast1
 
   CreateCommDebug:
     Type: String
@@ -27,7 +19,7 @@ Parameters:
 
   CloudFormationS3Bucket:
     Type: String
-    Default: s3.shrsrv.p.cf.useast1
+    Default: cf-templates-j3atw72be18l-us-east-1
 
 Conditions:
   CreateCommDebugCondition: !Equals [ !Ref CreateCommDebug, true ]
@@ -40,7 +32,5 @@ Resources:
       TemplateURL:
         !Sub ${CFTemplateS3Path}/step_020_01_instantiate_shared_services_vpc.yaml
       Parameters:
-        WFName: !Ref WFName
-        Region: !Ref Region
-        Env: !Ref Env
+        Environment: !Ref Environment
         CFTemplateS3Path: !Ref CFTemplateS3Path
