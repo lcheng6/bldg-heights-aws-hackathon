@@ -1,0 +1,410 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Martech VPC Template
+
+Parameters:
+  WFName:
+    Type: String
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: prod
+
+  CFTemplateS3Path:
+    Type: String
+
+#  TransitGatewayId:
+#    Type: String
+#    Default: tgw-01f33752ab7a2793c
+
+Mappings:
+  VPCInfo:
+    WorkflowPrimary: #TODO: get from AWS infrastructure team your VPC and subnet assignments and VPC names
+      CIDR:  10.0.0.0/20
+      Region: us-east-1
+      ExportName: vpc-urbaninst-dev-useast1
+#    SharedServicesPrimary:
+#      CIDR: 10.70.0.0/20
+#      Region: us-east-1
+
+  WorkflowPrimarySubnets: #TODO: create appropriate names and subnets allocation or your VPC, also change subn.workflow to something appropriate
+    WorkflowSubnet1:
+      CIDR: 10.0.0.0/23
+      AZ: us-east-1a
+      Name: subn.urbaninst.dev.work.useast1.az1
+      ExportName: subn-urbaninst-dev-work-useast1-az1
+    WorkflowSubnet2:
+      CIDR: 10.0.2.0/23
+      AZ: us-east-1b
+      Name: subn.urbaninst.dev.work.useast1.az2
+      ExportName: subn-urbaninst-dev-work-useast1-az2
+    WorkflowSubnet3:
+      CIDR: 10.0.4.0/23
+      AZ: us-east-1c
+      Name: subn.urbaninst.dev.work.useast1.az3
+      ExportName: subn-urbaninst-dev-work-useast1-az3
+    ProxySubnet1:
+      CIDR: 10.0.8.0/23
+      AZ: us-east-1a
+      Name: subn.urbaninst.dev.proxy.useast1.az1
+      ExportName: subn-urbaninst-dev-proxy-useast1-az1
+    ProxySubnet2:
+      CIDR: 10.0.10.0/23
+      AZ: us-east-1b
+      Name: subn.urbaninst.dev.proxy.useast1.az2
+      ExportName: subn-urbaninst-dev-proxy-useast1-az2
+    ProxySubnet3:
+      CIDR: 10.0.12.0/23
+      AZ: us-east-1c
+      Name: subn.urbaninst.dev.proxy.useast1.az3
+      ExportName: subn-urbaninst-dev-proxy-useast1-az3
+
+Resources:
+  WorkflowVPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !FindInMap [VPCInfo, WorkflowPrimary, CIDR]
+      EnableDnsSupport: True
+      EnableDnsHostnames: True
+      InstanceTenancy: default
+      Tags:
+        - Key: Type
+          Value: vpc
+        - Key: Name
+          Value: !Sub "vpc.${Environment}.${AWS::Region}"
+
+  #  ----------- Begin Section Subnets -------------- #
+
+  WorkSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet1, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet1, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet1, Name]
+
+  WorkSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet2, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet2, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet2, Name]
+
+  WorkSubnet3:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet3, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet3, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet3, Name]
+
+  ProxySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, ProxySubnet1, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, ProxySubnet1, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, ProxySubnet1, Name]
+
+  ProxySubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, ProxySubnet2, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, ProxySubnet2, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, ProxySubnet2, Name]
+
+  ProxySubnet3:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, ProxySubnet3, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, ProxySubnet3, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, ProxySubnet3, Name]
+
+  # ---- Begin Section  Route Table and Route Table Association ------ #
+  ProxySubnetRouteTable1:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.proxysubnet.${AWS::Region}.az1"
+
+  ProxySubnetRouteTable2:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.proxysubnet.${AWS::Region}.az2"
+
+  ProxySubnetRouteTable3:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.proxysubnet.${AWS::Region}.az3"
+
+  ProxySubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: ProxySubnet1
+      RouteTableId:
+        Ref: ProxySubnetRouteTable1
+
+  ProxySubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: ProxySubnet2
+      RouteTableId:
+        Ref: ProxySubnetRouteTable2
+
+  ProxySubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: ProxySubnet3
+      RouteTableId:
+        Ref: ProxySubnetRouteTable3
+
+  WorkflowSubnetRouteTable1:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.worksubnet.${AWS::Region}.az1"
+
+  WorkflowSubnetRouteTable2:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.worksubnet.${AWS::Region}.az2"
+
+  WorkflowSubnetRouteTable3:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.worksubnet.${AWS::Region}.az3"
+
+  WorkflowSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: WorkSubnet1
+      RouteTableId:
+        Ref: WorkflowSubnetRouteTable1
+
+  WorkflowSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: WorkSubnet2
+      RouteTableId:
+        Ref: WorkflowSubnetRouteTable2
+
+  WorkflowSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: WorkSubnet3
+      RouteTableId:
+        Ref: WorkflowSubnetRouteTable3
+  # ---- End Section  Route Table and Route Table Association ------ #
+
+  #----- Begin Section VPC Endpoint ---------#
+  S3Endpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:*'
+            Resource:
+              - '*'
+      RouteTableIds:
+        - !Ref WorkflowSubnetRouteTable1
+        - !Ref WorkflowSubnetRouteTable2
+        - !Ref WorkflowSubnetRouteTable3
+#       These subnets don't really need S3 endpoints; you should think about whether to uncomment these lines
+#        - !Ref ProxySubnet1
+#        - !Ref ProxySubnet2
+#        - !Ref ProxySubnet3
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .s3
+      VpcId: !Ref WorkflowVPC
+
+## TODO: evaluate your work load, and see if you need to have a private endpoint to DynamoDB.  If yes, uncommeont these lines
+#  DynamoDBEndpoint:
+#    Type: 'AWS::EC2::VPCEndpoint'
+#    Properties:
+#      RouteTableIds:
+#        - !Ref WorkflowSubnetRouteTable1
+#        - !Ref WorkflowSubnetRouteTable2
+#        - !Ref WorkflowSubnetRouteTable3
+##       These subnets don't really need DDB endpoints; you should think about whether to uncomment these lines
+##        - !Ref ProxySubnet1
+##        - !Ref ProxySubnet2
+##        - !Ref ProxySubnet3
+#      ServiceName: !Join
+#        - ''
+#        - - com.amazonaws.
+#          - !Ref 'AWS::Region'
+#          - .dynamodb
+#      VpcId: !Ref SharedServicesVPC
+#----- End Section VPC Endpoint ---------#
+#
+#  # SecurityGroupsTemplate creates a basic set of security groups:
+#  #  VPC Endpoints Security Group, DNS Outbound Resolver, Communication Debug EC2s
+#  SecurityGroupsTemplate:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_030_01_workflow_security_groups.yaml
+#      Parameters:
+#        VPCId: !Ref WorkflowVPC
+#        Environment: !Ref Environment
+#        Region: !Ref AWS::Region
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        VPCCIDR: !FindInMap [VPCInfo, WorkflowPrimary, CIDR]
+
+#  # VPCPrivateEndpointsTemplate creates the following endpoints
+#  # S3, SSM, EC2 Logging, Secrets Manager
+#  VPCPrivateEndpointsTemplate:
+#    DependsOn: SecurityGroupsTemplate
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_030_02_workflow_vpc_private_endpoints.yaml
+#      Parameters:
+#        VPCId: !Ref WorkflowVPC
+#        Environment: !Ref Environment
+#        Region: !Ref AWS::Region
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        ProxySubnetsList: !Sub "${ProxySubnet1},${ProxySubnet2},${ProxySubnet3}"
+#        VPCEndpointSecurityGroupId: !GetAtt SecurityGroupsTemplate.Outputs.VPCEndpointSecurityGroup
+#        TransitGatewayId: !Ref TransitGatewayId
+#
+#  # VPCR53PrivateHostedZoneTemplate creates a private Route 53 hosted zone
+#  # "${WFName}.${Environment}.useast1.awslordabbett.com" and link it to the VPC.
+#  VPCR53PrivateHostedZoneTemplate:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_030_04_workflow_dns_private_zone.yaml
+#      Parameters:
+#        Region: !Ref AWS::Region
+#        Environment: !Ref Environment
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        VPCId: !Ref WorkflowVPC
+#
+#  # VPCR53PrivateResolversTemplate creates the DNS outbound resolvers
+#  VPCR53PrivateResolversTemplate:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_030_05_workflow_vpc_dns_conditional_forwarders.yaml
+#      Parameters:
+#        VPCId: !Ref WorkflowVPC
+#        Environment: !Ref Environment
+#        Region: !Ref AWS::Region
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        ProxySubnetsList: !Sub "${ProxySubnet1},${ProxySubnet2},${ProxySubnet3}"
+#        WorkflowSubnetsList: !Sub "${WorkSubnet1},${WorkSubnet2},${WorkSubnet3}"
+#        DNSResolverSecurityGroupId: !GetAtt SecurityGroupsTemplate.Outputs.DNSOutboundResolverSecurityGroup
+
+Outputs:
+  WorkflowVPC:
+    Description: Sample Workflow VPC ID
+    Value: !Ref WorkflowVPC
+    Export:
+      Name: !FindInMap [ VPCInfo, WorkflowPrimary, ExportName ]
+
+  WorkSubnet1:
+    Description: Work Subnet1 AZ1
+    Value: !Ref WorkSubnet1
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, WorkflowSubnet1, ExportName ]
+
+  WorkSubnet2:
+    Description: Work Subnet2 AZ2
+    Value: !Ref WorkSubnet2
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, WorkflowSubnet2, ExportName ]
+
+  WorkSubnet3:
+    Description: Work Subnet3 AZ3
+    Value: !Ref WorkSubnet3
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, WorkflowSubnet3, ExportName ]
+
+  ProxySubnet1:
+    Description: Proxy Subnet1 AZ1
+    Value: !Ref ProxySubnet1
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, ProxySubnet1, ExportName ]
+
+  ProxySubnet2:
+    Description: Proxy Subnet2 AZ2
+    Value: !Ref ProxySubnet2
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, ProxySubnet2, ExportName ]
+
+  ProxySubnet3:
+    Description: Proxy Subnet3 AZ3
+    Value: !Ref ProxySubnet3
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, ProxySubnet3, ExportName ]

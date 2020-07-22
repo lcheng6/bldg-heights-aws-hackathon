@@ -8,7 +8,7 @@ stackName=$2
 
 . ./library_functions/library_funcs.sh --source-only
 
-if [ "X$stackName" == "XUI-Infra-USEast1" ]
+if [ "X$stackName" == "XUI-Infra-us-east-1" ]
 then
     export AWS_DEFAULT_REGION=us-east-1
     export AWS_PROFILE=urban-institute-infranetseccf
@@ -45,16 +45,16 @@ then
     then
         #do update
         aws cloudformation update-stack --stack-name $stackName \
-            --template-url https://s3.amazonaws.com/${cloudformation_bucket}/infrastructure-stack/step_010_01_instantiate_workload_enviornment.yaml \
-            --parameters file://../infrastructure-stack/infra-stack-params.json
+            --template-url https://s3.amazonaws.com/${cloudformation_bucket}/infrastructure-stack/step_010_01_instantiate_workload_environment.yaml \
+            --parameters file://../infrastructure-stack/infra-stack-params.json \
             --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
 
     elif [ "X$action" == "Xcreate" ]
     then
         #do create
         aws cloudformation create-stack --stack-name $stackName \
-            --template-url https://s3.amazonaws.com/${cloudformation_bucket}/infrastructure-stack/step_010_01_instantiate_workload_enviornment.yaml \
-            --parameters file://../infrastructure-stack/infra-stack-params.json
+            --template-url https://s3.amazonaws.com/${cloudformation_bucket}/infrastructure-stack/step_010_01_instantiate_workload_environment.yaml \
+            --parameters file://../infrastructure-stack/infra-stack-params.json \
             --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
 
     elif [ "X$action" == "Xwait" ]

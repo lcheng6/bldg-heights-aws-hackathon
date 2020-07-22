@@ -1,6 +1,14 @@
 [
   {
     "ParameterKey": "CFTemplateS3Path",
-    "ParameterValue": "https://s3.amazonaws.com/cf-templates-18oesyyko5gbp-us-east-1/infrastructure-stack/"
+    "ParameterValue": "https://s3.amazonaws.com/cf-templates-j3atw72be18l-us-east-1/infrastructure-stack"
+  },
+  {
+    "ParameterKey": "WFName",
+    "ParameterValue": "urbaninst"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
   }
 ]

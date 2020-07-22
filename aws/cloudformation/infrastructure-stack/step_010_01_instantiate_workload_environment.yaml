@@ -4,13 +4,17 @@ Description: >-
   Shared Services Template
 
 Parameters:
+  WFName:
+    Type: String
+
   CFTemplateS3Path:
     Type: String
     Default: https://s3.amazonaws.com/cf-templates-j3atw72be18l-us-east-1/sharedservices-useast1-cf-templates
 
   Environment:
     Type: String
-    Default: prod
+    AllowedValues: [dev, test, prod]
+    Default: dev
 
   CreateCommDebug:
     Type: String
@@ -30,7 +34,8 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        !Sub ${CFTemplateS3Path}/step_020_01_instantiate_shared_services_vpc.yaml
+        !Sub ${CFTemplateS3Path}/step_020_01_workflow_vpc.yaml
       Parameters:
+        WFName: !Ref WFName
         Environment: !Ref Environment
         CFTemplateS3Path: !Ref CFTemplateS3Path
