@@ -1,0 +1,275 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Workflow S3 Buckets
+
+Parameters:
+
+  WFName:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  Environment:
+    Type: String
+
+Mappings:
+  ELBLoggingPrincipal:
+    "us-east-1":
+      Value: arn:aws:iam::127311923021:root
+    "us-east-2":
+      Value: arn:aws:iam::033677994240:root
+    "us-west-1":
+      Value: arn:aws:iam::027434742980:root
+    "us-west-2":
+      Value: arn:aws:iam::797873946194:root
+    "eu-west-1":
+      Value: arn:aws:iam::156460612806:root
+
+Resources:
+  S3WorkflowCloudTrailBucket:
+#    DeletionPolicy: Retain
+    DependsOn: S3WorkflowS3ServerLoggingBucket
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: LogDeliveryWrite
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: !Join
+        - '.'
+        - - 's3'
+          - !Ref WFName  #to make the s3 bucket unique
+          - !Ref Environment
+          - cloudtrail
+          - !Ref AWS::Region
+      CorsConfiguration:
+        CorsRules:
+          - Id: LoggingCorsRules
+            AllowedHeaders:
+              - Authorization
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - '*'
+            MaxAge: '3600'
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteAfter10Years
+            Status: Enabled
+            ExpirationInDays: '3653'
+          - Id: TransitionToGlacierAfter3Months
+            Status: Enabled
+            Transitions:
+              - StorageClass: GLACIER
+                TransitionInDays: 93
+      LoggingConfiguration:
+        DestinationBucketName: !Ref S3WorkflowS3ServerLoggingBucket
+        LogFilePrefix: "S3AccessLogs/cloudtrail/"
+      Tags:
+        - Key: WFName
+          Value: !Ref WFName
+        - Key: Type
+          Value: s3
+        - Key: Function
+          Value: cloudtrail
+        - Key: Name
+          Value: !Sub "s3.${WFName}.${Environment}.cloudtrail.${AWS::Region}"
+
+  S3WorkflowCloudTrailBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket:
+        Ref: S3WorkflowCloudTrailBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: PreventDeletes
+            Action: 's3:Del*'
+            Effect: Deny
+            Resource: !Join
+              - ''
+              - - !GetAtt
+                  - S3WorkflowCloudTrailBucket
+                  - Arn
+                - /*
+            Principal: '*'
+          -
+            Sid: "AWSCloudTrailAclCheck"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:GetBucketAcl"
+            Resource:
+              !Sub |-
+              arn:aws:s3:::${S3WorkflowCloudTrailBucket}
+          -
+            Sid: "AWSCloudTrailWrite"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource:
+              !Sub |-
+              arn:aws:s3:::${S3WorkflowCloudTrailBucket}/AWSLogs/${AWS::AccountId}/*
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"
+          -
+            Sid: "DenyNonSSLTraffic"
+            Effect: "Deny"
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !Sub |-
+                arn:aws:s3:::${S3WorkflowCloudTrailBucket}/*
+              - !Sub |-
+                arn:aws:s3:::${S3WorkflowCloudTrailBucket}
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+
+  S3WorkflowS3ServerLoggingBucket:
+#    DeletionPolicy: Retain
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: LogDeliveryWrite
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: !Join
+        - '.'
+        - - 's3'
+          - !Ref WFName  #to make the s3 bucket unique
+          - !Ref Environment
+          - s3serverlog
+          - !Ref AWS::Region
+      CorsConfiguration:
+        CorsRules:
+          - Id: LoggingCorsRules
+            AllowedHeaders:
+              - Authorization
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - '*'
+            MaxAge: '3600'
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteAfter10Years
+            Status: Enabled
+            ExpirationInDays: '3653'
+          - Id: TransitionToGlacierAfter3Months
+            Status: Enabled
+            Transitions:
+              - StorageClass: GLACIER
+                TransitionInDays: 93
+      Tags:
+        - Key: WFName
+          Value: !Ref WFName
+        - Key: Type
+          Value: s3
+        - Key: Function
+          Value: s3serverlog
+        - Key: Name
+          Value: !Sub "s3.${WFName}.${Environment}.s3serverlog.${AWS::Region}"
+
+  S3WorkflowS3ServerLoggingBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket:
+        Ref: S3WorkflowS3ServerLoggingBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "DenyNonSSLTraffic"
+            Effect: "Deny"
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !Sub |-
+                arn:aws:s3:::${S3WorkflowS3ServerLoggingBucket}/*
+              - !Sub |-
+                arn:aws:s3:::${S3WorkflowS3ServerLoggingBucket}
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+
+Outputs:
+
+  S3WorkflowCloudTrailBucket:
+    Description: Workflow Account CloudTrail Bucket Name
+    Value: !Ref S3WorkflowCloudTrailBucket
+    Export:
+      Name: !Join
+        - '-'
+        - - 's3'
+          - !Ref WFName  #to make the s3 bucket unique
+          - !Ref Environment
+          - cloudtrail
+          - !Ref AWS::Region
+
+  S3WorkflowCloudTrailBucketArn:
+    Description: Workflow CloudTrail Bucket Arn
+    Value: !GetAtt
+      - S3WorkflowCloudTrailBucket
+      - Arn
+    Export:
+      Name: !Join
+        - '-'
+        - - 's3arn'
+          - !Ref WFName  #to make the s3 bucket unique
+          - !Ref Environment
+          - cloudtrail
+          - !Ref AWS::Region
+
+  S3WorkflowS3ServerLoggingBucket:
+    Description: Workflow Account S3 Server log Bucket Name
+    Value: !Ref S3WorkflowS3ServerLoggingBucket
+    Export:
+      Name: !Join
+        - '-'
+        - - 's3'
+          - !Ref WFName  #to make the s3 bucket unique
+          - !Ref Environment
+          - s3serverlog
+          - !Ref AWS::Region
+
+  S3WorkflowS3ServerLoggingBucketArn:
+    Description: Workflow Account CloudTrail Bucket Arn
+    Value: !GetAtt
+      - S3WorkflowS3ServerLoggingBucket
+      - Arn
+    Export:
+      Name: !Join
+        - '-'
+        - - 's3arn'
+          - !Ref WFName  #to make the s3 bucket unique
+          - !Ref Environment
+          - s3serverlog
+          - !Ref AWS::Region
+
+  S3ServerLoggingBucket:
+    Description: Workflow Account S3 Server log Bucket Name
+    Value: !Ref S3WorkflowS3ServerLoggingBucket
+    Export:
+      Name: !Join
+        - '-'
+        - - 's3'
+          - s3serverlog
+          - !Ref AWS::Region

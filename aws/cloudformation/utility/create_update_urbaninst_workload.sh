@@ -8,7 +8,7 @@ stackName=$2
 
 . ./library_functions/library_funcs.sh --source-only
 
-if [ "X$stackName" == "XUI-Infra-us-east-1" ]
+if [ "X$stackName" == "XInfraNetSec-us-east-1" ]
 then
     export AWS_DEFAULT_REGION=us-east-1
     export AWS_PROFILE=urban-institute-infranetseccf

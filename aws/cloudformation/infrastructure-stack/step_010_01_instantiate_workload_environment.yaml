@@ -30,6 +30,16 @@ Conditions:
 
 Resources:
 
+  S3BucketsTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_020_02_s3_buckets_and_policies.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: !Ref Environment
+
   VPCTemplate:
     Type: AWS::CloudFormation::Stack
     Properties:
