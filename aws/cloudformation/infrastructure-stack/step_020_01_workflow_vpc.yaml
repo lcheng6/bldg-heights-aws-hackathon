@@ -306,20 +306,20 @@ Resources:
 #          - .dynamodb
 #      VpcId: !Ref SharedServicesVPC
 #----- End Section VPC Endpoint ---------#
-#
-#  # SecurityGroupsTemplate creates a basic set of security groups:
-#  #  VPC Endpoints Security Group, DNS Outbound Resolver, Communication Debug EC2s
-#  SecurityGroupsTemplate:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL:
-#        !Sub ${CFTemplateS3Path}/step_030_01_workflow_security_groups.yaml
-#      Parameters:
-#        VPCId: !Ref WorkflowVPC
-#        Environment: !Ref Environment
-#        Region: !Ref AWS::Region
-#        CFTemplateS3Path: !Ref CFTemplateS3Path
-#        VPCCIDR: !FindInMap [VPCInfo, WorkflowPrimary, CIDR]
+
+  # SecurityGroupsTemplate creates a basic set of security groups:
+  #  VPC Endpoints Security Group, DNS Outbound Resolver, Communication Debug EC2s
+  SecurityGroupsTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_030_01_security_groups.yaml
+      Parameters:
+        WFName: !Ref WFName
+        VPCId: !Ref WorkflowVPC
+        Environment: !Ref Environment
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        VPCCIDR: !FindInMap [VPCInfo, WorkflowPrimary, CIDR]
 
 #  # VPCPrivateEndpointsTemplate creates the following endpoints
 #  # S3, SSM, EC2 Logging, Secrets Manager

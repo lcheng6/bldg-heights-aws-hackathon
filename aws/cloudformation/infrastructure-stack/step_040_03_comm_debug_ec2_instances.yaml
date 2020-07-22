@@ -1,0 +1,339 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Workflow Communication Debug Template
+
+Parameters:
+  WFName:
+    Type: String
+    Default: shrsrv
+
+  Env:
+    Type: String
+    Default: prod
+
+  Region:
+    Type: String
+    Default: useast1
+
+  CFTemplateS3Path:
+    Type: String
+
+  KeyPairName:
+    Type: String
+
+Mappings:
+  RegionalAMI:
+    us-east-1:
+      Windows2016ServerBase: ami-0b91c01eb7fffd30b
+      AmazonLinux2: ami-0b69ea66ff7391e80
+      AmazonLinux: ami-00eb20669e0990cb4
+      SophosUTM: ami-0f57e08183eb95f5c
+    us-west-2:
+      Windows2016ServerBase: ami-0dca119820006527c
+      AmazonLinux2: ami-04b762b4289fba92b
+      AmazonLinux: ami-08d489468314a58df
+      SophosUTM: ami-0f7297c104f20c694
+
+  InstanceSizing:
+    CommDebug:
+      type: t3.nano
+      rootVolume: 8
+
+  #<CIDRSection>
+  VPCInfo:
+    WorkflowPrimary: #TODO: get from AWS infrastructure team your VPC and subnet assignments and VPC names
+      CIDR:  10.73.0.0/21
+      Region: us-east-1
+      ExportName: vpc-backres-prod-useast1
+    SharedServicesPrimary:
+      CIDR: 10.70.0.0/20
+      Region: us-east-1
+
+  WorkflowPrimarySubnets: #TODO: create appropriate names and subnets allocation or your VPC, also change subn.workflow to something appropriate
+    WorkflowSubnet1:
+      CIDR: 10.72.0.0/24
+      AZ: us-east-1a
+      Name: subn.martech.dev.work.useast1.az1
+      ExportName: subn-martech-dev-work-useast1-az1
+    WorkflowSubnet2:
+      CIDR: 10.72.1.0/24
+      AZ: us-east-1b
+      Name: subn.martech.dev.work.useast1.az2
+      ExportName: subn-martech-dev-work-useast1-az2
+    WorkflowSubnet3:
+      CIDR: 10.72.2.0/24
+      AZ: us-east-1c
+      Name: subn.martech.dev.work.useast1.az3
+      ExportName: subn-martech-dev-work-useast1-az3
+    ProxySubnet1:
+      CIDR: 10.72.4.0/24
+      AZ: us-east-1a
+      Name: subn.martech.dev.proxy.useast1.az1
+      ExportName: subn-martech-dev-proxy-useast1-az1
+    ProxySubnet2:
+      CIDR: 10.72.5.0/24
+      AZ: us-east-1b
+      Name: subn.martech.dev.proxy.useast1.az2
+      ExportName: subn-martech-dev-proxy-useast1-az2
+    ProxySubnet3:
+      CIDR: 10.72.6.0/24
+      AZ: us-east-1c
+      Name: subn.martech.dev.proxy.useast1.az3
+      ExportName: subn-martech-dev-proxy-useast1-az3
+
+
+Resources:
+  WorkflowSubnet1CommDebug:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      IamInstanceProfile:
+        Fn::ImportValue:
+          !Sub "instprof-${WFName}-${Env}-commdebug"
+      ImageId:
+        Fn::FindInMap:
+          - RegionalAMI
+          - !Ref AWS::Region
+          - AmazonLinux2
+      InstanceType: !FindInMap [InstanceSizing, CommDebug, type]
+      KeyName: !Ref KeyPairName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeviceIndex: 0
+          GroupSet:
+            - Fn::ImportValue:
+                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+          SubnetId:
+            Fn::ImportValue:
+              !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet1, ExportName]
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeType: gp2
+            Encrypted: true
+            DeleteOnTermination: true
+            VolumeSize: !FindInMap [InstanceSizing, CommDebug, rootVolume]
+      DisableApiTermination: "false"
+      Tags:
+        - Key: WFName
+          Value: !Ref WFName
+        - Key: Type
+          Value: ec2
+        - Key: Name
+          Value: !Sub "ec2.${WFName}.${Env}.workflowcommdebug.${Region}.az1"
+        - Key: OS
+          Value: Amazon Linux 2
+        - Key: Function
+          Value: Comm Debug Server
+
+  WorkflowSubnet2CommDebug:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      IamInstanceProfile:
+        Fn::ImportValue:
+          !Sub "instprof-${WFName}-${Env}-commdebug"
+      ImageId:
+        Fn::FindInMap:
+          - RegionalAMI
+          - !Ref AWS::Region
+          - AmazonLinux2
+      InstanceType: !FindInMap [InstanceSizing, CommDebug, type]
+      KeyName: !Ref KeyPairName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeviceIndex: 0
+          GroupSet:
+            - Fn::ImportValue:
+                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+          SubnetId:
+            Fn::ImportValue:
+              !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet2, ExportName]
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeType: gp2
+            Encrypted: true
+            DeleteOnTermination: true
+            VolumeSize: !FindInMap [InstanceSizing, CommDebug, rootVolume]
+      DisableApiTermination: "false"
+      Tags:
+        - Key: WFName
+          Value: !Ref WFName
+        - Key: Type
+          Value: ec2
+        - Key: Name
+          Value: !Sub "ec2.${WFName}.${Env}.workflowcommdebug.${Region}.az2"
+        - Key: OS
+          Value: Amazon Linux 2
+        - Key: Function
+          Value: Comm Debug Server
+
+  WorkflowSubnet3CommDebug:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      IamInstanceProfile:
+        Fn::ImportValue:
+          !Sub "instprof-${WFName}-${Env}-commdebug"
+      ImageId:
+        Fn::FindInMap:
+          - RegionalAMI
+          - !Ref AWS::Region
+          - AmazonLinux2
+      InstanceType: !FindInMap [InstanceSizing, CommDebug, type]
+      KeyName: !Ref KeyPairName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeviceIndex: 0
+          GroupSet:
+            - Fn::ImportValue:
+                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+          SubnetId:
+            Fn::ImportValue:
+              !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet3, ExportName]
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeType: gp2
+            Encrypted: true
+            DeleteOnTermination: true
+            VolumeSize: !FindInMap [InstanceSizing, CommDebug, rootVolume]
+      DisableApiTermination: "false"
+      Tags:
+        - Key: WFName
+          Value: !Ref WFName
+        - Key: Type
+          Value: ec2
+        - Key: Name
+          Value: !Sub "ec2.${WFName}.${Env}.workflowcommdebug.${Region}.az3"
+        - Key: OS
+          Value: Amazon Linux 2
+        - Key: Function
+          Value: Comm Debug Server
+
+
+# proxy subnets check
+  ProxySubnet1CommDebug:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      IamInstanceProfile:
+        Fn::ImportValue:
+          !Sub "instprof-${WFName}-${Env}-commdebug"
+      ImageId:
+        Fn::FindInMap:
+          - RegionalAMI
+          - !Ref AWS::Region
+          - AmazonLinux2
+      InstanceType: !FindInMap [InstanceSizing, CommDebug, type]
+      KeyName: !Ref KeyPairName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeviceIndex: 0
+          GroupSet:
+            - Fn::ImportValue:
+                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+          SubnetId:
+            Fn::ImportValue:
+              !FindInMap [WorkflowPrimarySubnets, ProxySubnet1, ExportName]
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeType: gp2
+            Encrypted: true
+            DeleteOnTermination: true
+            VolumeSize: !FindInMap [InstanceSizing, CommDebug, rootVolume]
+      DisableApiTermination: "false"
+      Tags:
+        - Key: WFName
+          Value: !Ref WFName
+        - Key: Type
+          Value: ec2
+        - Key: Name
+          Value: !Sub "ec2.${WFName}.${Env}.proxycommdebug.${Region}.az1"
+        - Key: OS
+          Value: Amazon Linux 2
+        - Key: Function
+          Value: Comm Debug Server
+
+  ProxySubnet2CommDebug:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      IamInstanceProfile:
+        Fn::ImportValue:
+          !Sub "instprof-${WFName}-${Env}-commdebug"
+      ImageId:
+        Fn::FindInMap:
+          - RegionalAMI
+          - !Ref AWS::Region
+          - AmazonLinux2
+      InstanceType: !FindInMap [InstanceSizing, CommDebug, type]
+      KeyName: !Ref KeyPairName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeviceIndex: 0
+          GroupSet:
+            - Fn::ImportValue:
+                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+          SubnetId:
+            Fn::ImportValue:
+              !FindInMap [WorkflowPrimarySubnets, ProxySubnet2, ExportName]
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeType: gp2
+            Encrypted: true
+            DeleteOnTermination: true
+            VolumeSize: !FindInMap [InstanceSizing, CommDebug, rootVolume]
+      DisableApiTermination: "false"
+      Tags:
+        - Key: WFName
+          Value: !Ref WFName
+        - Key: Type
+          Value: ec2
+        - Key: Name
+          Value: !Sub "ec2.${WFName}.${Env}.proxycommdebug.${Region}.az2"
+        - Key: OS
+          Value: Amazon Linux 2
+        - Key: Function
+          Value: Comm Debug Server
+
+  ProxySubnet3CommDebug:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      IamInstanceProfile:
+        Fn::ImportValue:
+          !Sub "instprof-${WFName}-${Env}-commdebug"
+      ImageId:
+        Fn::FindInMap:
+          - RegionalAMI
+          - !Ref AWS::Region
+          - AmazonLinux2
+      InstanceType: !FindInMap [InstanceSizing, CommDebug, type]
+      KeyName: !Ref KeyPairName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeviceIndex: 0
+          GroupSet:
+            - Fn::ImportValue:
+                !Sub "sg-${WFName}-${Env}-commdebug-${Region}"
+          SubnetId:
+            Fn::ImportValue:
+              !FindInMap [WorkflowPrimarySubnets, ProxySubnet3, ExportName]
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeType: gp2
+            Encrypted: true
+            DeleteOnTermination: true
+            VolumeSize: !FindInMap [InstanceSizing, CommDebug, rootVolume]
+      DisableApiTermination: "false"
+      Tags:
+        - Key: WFName
+          Value: !Ref WFName
+        - Key: Type
+          Value: ec2
+        - Key: Name
+          Value: !Sub "ec2.${WFName}.${Env}.proxycommdebug.${Region}.az3"
+        - Key: OS
+          Value: Amazon Linux 2
+        - Key: Function
+          Value: Comm Debug Server
