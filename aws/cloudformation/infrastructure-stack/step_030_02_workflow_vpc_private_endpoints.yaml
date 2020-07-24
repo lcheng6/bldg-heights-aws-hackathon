@@ -1,0 +1,202 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Martech VPC Private Endpoints
+
+Parameters:
+  VPCId:
+    Description: "ID of the VPC to build VPC Private Endpoints in"
+    Type: AWS::EC2::VPC::Id
+
+  WFName:
+    Type: String
+    Default: shrsrv
+
+  Environment:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  ProxySubnetsList:
+    Type: CommaDelimitedList
+
+  VPCEndpointSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+
+  VPCEndpointPrivateDnsEnabled:
+    Type: String
+    Default: "true"
+
+#  TransitGatewayId:
+#    Type: String
+
+Resources:
+
+  #####------ Begin Section TGW Attachment ------####
+  #TODO: need to investigate how to make TGW attachment to another account
+
+#  TGWVPCAttachments:
+#    Type: AWS::EC2::TransitGatewayAttachment
+#    Properties:
+#      SubnetIds:
+#        - !Select [0, !Ref ProxySubnetsList]
+#        - !Select [1, !Ref ProxySubnetsList]
+#        - !Select [2, !Ref ProxySubnetsList]
+#      Tags:
+#        - Key: WFName
+#          Value: !Ref WFName
+#        - Key: Type
+#          Value: tgwatt
+#        - Key: Name
+#          Value: !Sub "tgwatt.${WFName}.${Env}.tgw.useast1"
+#      TransitGatewayId: !Ref TransitGatewayId
+#      VpcId: !Ref VPCId
+
+  #####------ End Section TGW Attachments ------####
+
+  #####------ Begin Section VPC Endpoints ------####
+
+  #here are some just some essential endpoints to do EC2 management; if you want to create additional endpoints, like KMS, ECS
+  #etc. This is the place to create it.
+  SSMEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcId: !Ref VPCId
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssm"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
+      SubnetIds:
+        - !Select [0, !Ref ProxySubnetsList]
+        - !Select [1, !Ref ProxySubnetsList]
+        - !Select [2, !Ref ProxySubnetsList]
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroupId
+
+  SSMMessagesEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcId: !Ref VPCId
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssmmessages"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
+      SubnetIds:
+        - !Select [0, !Ref ProxySubnetsList]
+        - !Select [1, !Ref ProxySubnetsList]
+        - !Select [2, !Ref ProxySubnetsList]
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroupId
+
+  EC2MessagesEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcId: !Ref VPCId
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ec2messages"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
+      SubnetIds:
+        - !Select [0, !Ref ProxySubnetsList]
+        - !Select [1, !Ref ProxySubnetsList]
+        - !Select [2, !Ref ProxySubnetsList]
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroupId
+
+  EC2Endpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcId: !Ref VPCId
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ec2"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
+      SubnetIds:
+        - !Select [0, !Ref ProxySubnetsList]
+        - !Select [1, !Ref ProxySubnetsList]
+        - !Select [2, !Ref ProxySubnetsList]
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroupId
+
+  LogsEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcId: !Ref VPCId
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.logs"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
+      SubnetIds:
+        - !Select [0, !Ref ProxySubnetsList]
+        - !Select [1, !Ref ProxySubnetsList]
+        - !Select [2, !Ref ProxySubnetsList]
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroupId
+
+  SecretsManagerEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcId: !Ref VPCId
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.secretsmanager"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
+      SubnetIds:
+        - !Select [0, !Ref ProxySubnetsList]
+        - !Select [1, !Ref ProxySubnetsList]
+        - !Select [2, !Ref ProxySubnetsList]
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroupId
+
+  SNSEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcId: !Ref VPCId
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.sns"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
+      SubnetIds:
+        - !Select [0, !Ref ProxySubnetsList]
+        - !Select [1, !Ref ProxySubnetsList]
+        - !Select [2, !Ref ProxySubnetsList]
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroupId
+
+  SQSEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcId: !Ref VPCId
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.sqs"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
+      SubnetIds:
+        - !Select [0, !Ref ProxySubnetsList]
+        - !Select [1, !Ref ProxySubnetsList]
+        - !Select [2, !Ref ProxySubnetsList]
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroupId
+
+  APIGatewayEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcId: !Ref VPCId
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.execute-api"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
+      SubnetIds:
+        - !Select [0, !Ref ProxySubnetsList]
+        - !Select [1, !Ref ProxySubnetsList]
+        - !Select [2, !Ref ProxySubnetsList]
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroupId
+
+#  KMSEndpoint:
+#    Type: "AWS::EC2::VPCEndpoint"
+#    Properties:
+#      VpcId: !Ref VPCId
+#      ServiceName: !Sub "com.amazonaws.${AWS::Region}.kms"
+#      VpcEndpointType: Interface
+#      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
+#      SubnetIds:
+#        - !Select [0, !Ref ProxySubnetsList]
+#        - !Select [1, !Ref ProxySubnetsList]
+#        - !Select [2, !Ref ProxySubnetsList]
+#      SecurityGroupIds:
+#        - !Ref VPCEndpointSecurityGroupId
+
+  #####------ End Section VPC Endpoints ------####

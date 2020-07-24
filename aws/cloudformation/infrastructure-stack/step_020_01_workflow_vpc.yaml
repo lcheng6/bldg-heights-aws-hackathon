@@ -344,7 +344,7 @@ Resources:
       GatewayId:
         Ref: WorkflowInternetGateway
   #----- End Section Internet Gateway Nat Gateway Endpoint ---------#
-  
+
   #----- Begin Section VPC Endpoint ---------#
   S3Endpoint:
     Type: 'AWS::EC2::VPCEndpoint'
@@ -409,6 +409,7 @@ Resources:
 
 #  # VPCPrivateEndpointsTemplate creates the following endpoints
 #  # S3, SSM, EC2 Logging, Secrets Manager
+#  # not necessary at this point
 #  VPCPrivateEndpointsTemplate:
 #    DependsOn: SecurityGroupsTemplate
 #    Type: AWS::CloudFormation::Stack
