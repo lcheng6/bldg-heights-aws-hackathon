@@ -1,13 +1,13 @@
 #!/bin/bash
 #this script will build a docker and push it to ECR
 
-AWS_PROFILE=liangchengkl2_kl2tech
+export AWS_PROFILE=urban-institute-infranetseccf
 
 $(aws ecr get-login --no-include-email --region us-east-1)
-docker build -t lastosqltransform .
+docker build -t repo-urbaninst-dev-lidarprocessing .
 
-docker tag lastosqltransform:latest 931047198824.dkr.ecr.us-east-1.amazonaws.com/lastosqltransform:latest
+docker tag repo-urbaninst-dev-lidarprocessing:latest 124836406894.dkr.ecr.us-east-1.amazonaws.com/repo-urbaninst-dev-lidarprocessing:latest
 
-docker push 931047198824.dkr.ecr.us-east-1.amazonaws.com/lastosqltransform:latest
+docker push 124836406894.dkr.ecr.us-east-1.amazonaws.com/repo-urbaninst-dev-lidarprocessing:latest
 
 unset AWS_PROFILE

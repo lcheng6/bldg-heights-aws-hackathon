@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  ECR Repos, currently containing data processing repos
+
+Parameters:
+  WFName:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+

@@ -1,7 +1,12 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Description: >-
-  Shared Services Template
+  Urban Institute workflows:
+  * Compute resources: any ECR or EC2 cluster
+  * Repo resources: ECR Container repo and code commit resources
+  * Data pipelines
+  * Databases
+  * Sagemaker/Jupyter notebooks
 
 Parameters:
   WFName:
@@ -22,6 +27,18 @@ Resources:
     Properties:
       TemplateURL:
         !Sub ${CFTemplateS3Path}/step_020_01_ecr_repos.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev
+
+  #create the ECR Fargate cluster to run any thing significant
+  #at the present time, we will only create a fargate cluster to run any data processing job
+  ECRClusterResourcesTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_020_02_ecr_clusters.yaml
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path

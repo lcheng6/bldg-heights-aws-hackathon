@@ -15,10 +15,6 @@ Parameters:
     AllowedValues: [dev, test, prod]
     Default: dev
 
-  CloudFormationS3Bucket:
-    Type: String
-    Default: cf-templates-j3atw72be18l-us-east-1
-
 Resources:
   LidarProcessingECRRepo:
     Type: "AWS::ECR::Repository"
