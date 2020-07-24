@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Shared Services Template
+
+Parameters:
+  WFName:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+    Default: https://s3.amazonaws.com/cf-templates-j3atw72be18l-us-east-1/sharedservices-useast1-cf-templates
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+
+  CreateCommDebug:
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+
+  CloudFormationS3Bucket:
+    Type: String
+    Default: cf-templates-j3atw72be18l-us-east-1

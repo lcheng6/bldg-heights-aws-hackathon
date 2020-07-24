@@ -10,5 +10,9 @@
   {
     "ParameterKey": "Environment",
     "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "CreateCommDebug",
+    "ParameterValue": "true"
   }
 ]
