@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Description: >-
-  Shared Services Template
+  ECR Repos, currently containing data processing repos
 
 Parameters:
   WFName:
@@ -15,11 +15,6 @@ Parameters:
     Type: String
     AllowedValues: [dev, test, prod]
     Default: dev
-
-  CreateCommDebug:
-    Type: String
-    Default: false
-    AllowedValues: [true, false]
 
   CloudFormationS3Bucket:
     Type: String

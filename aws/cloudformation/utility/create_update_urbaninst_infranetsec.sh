@@ -8,7 +8,7 @@ stackName=$2
 
 . ./library_functions/library_funcs.sh --source-only
 
-if [ "X$stackName" == "XUrbanInstWorkFlow-us-east-1" ]
+if [ "X$stackName" == "XInfraNetSec-us-east-1" ]
 then
     export AWS_DEFAULT_REGION=us-east-1
     export AWS_PROFILE=urban-institute-infranetseccf
@@ -25,7 +25,7 @@ then
     # echo $AWS_ACCESS_KEY_ID
     # echo $AWS_SECRET_ACCESS_KEY
 
-    aws s3 sync ../workflow-stack/ s3://${cloudformation_bucket}/urban-institute-workflow-stack/ --delete
+    aws s3 sync ../infrastructure-stack/ s3://${cloudformation_bucket}/infrastructure-stack/ --delete
 
     if [ "X$action" == "Xupcreate" ]
     then
@@ -45,16 +45,16 @@ then
     then
         #do update
         aws cloudformation update-stack --stack-name $stackName \
-            --template-url https://s3.amazonaws.com/${cloudformation_bucket}/urban-institute-workflow-stack/step_010_01_instantiate_workflow.yaml \
-            --parameters file://../infrastructure-stack/workflow-stack-params.json \
+            --template-url https://s3.amazonaws.com/${cloudformation_bucket}/infrastructure-stack/step_010_01_instantiate_workload_environment.yaml \
+            --parameters file://../infrastructure-stack/infra-stack-params.json \
             --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
 
     elif [ "X$action" == "Xcreate" ]
     then
         #do create
         aws cloudformation create-stack --stack-name $stackName \
-            --template-url https://s3.amazonaws.com/${cloudformation_bucket}/infrastructure-stack/step_010_01_instantiate_workflow.yaml \
-            --parameters file://../infrastructure-stack/workflow-stack-params.json \
+            --template-url https://s3.amazonaws.com/${cloudformation_bucket}/infrastructure-stack/step_010_01_instantiate_workload_environment.yaml \
+            --parameters file://../infrastructure-stack/infra-stack-params.json \
             --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
 
     elif [ "X$action" == "Xwait" ]
