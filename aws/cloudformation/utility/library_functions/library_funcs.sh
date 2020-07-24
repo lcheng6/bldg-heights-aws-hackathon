@@ -61,35 +61,6 @@ unload_aws_credentials_from_env (){
   unset AWS_PROFILE
 }
 
-# load AWS credentials into environment variables
-load_aws_credentials_into_env_from_secrets_manager(){
-  local secretid=$1
-  local region=$2
-  #unset the previously defined AWS parameters
-  unload_aws_credentials_from_env
-  REGION='us-east-1' #default region for bucket
-  if [ "X$region" == "Xuseast1" ]
-  then
-    REGION='us-east-1'
-  elif [ "X$region" == "Xuseast2" ]
-  then
-    REGION='us-east-2'
-  elif [ "X$region" == "Xeuwest1" ]
-  then
-    REGION='eu-west-1'
-  else
-    REGION='us-east-1' #default region for bucket
-  fi
-
-  SECRETSMANAGER_READER_PROFILE=lordabbett_shrsvc_cf_user
-
-  #Get a secret string to test
-  #secretvalue=`aws secretsmanager get-secret-value --secret-id backuprestore-prod-infranetsec-cf-user --profile $SECRETSMANAGER_READER_PROFILE`
-  secretvalue=`aws secretsmanager get-secret-value --secret-id $secretid --profile $SECRETSMANAGER_READER_PROFILE --region $REGION`
-  export AWS_ACCESS_KEY_ID=`echo $secretvalue |  jq '.SecretString' --raw-output | jq '.AWS_ACCESS_KEY_ID' --raw-output`
-  export AWS_SECRET_ACCESS_KEY=`echo $secretvalue |  jq '.SecretString' --raw-output | jq '.AWS_SECRET_ACCESS_KEY' --raw-output`
-
-}
 
 
 

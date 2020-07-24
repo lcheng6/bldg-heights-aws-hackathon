@@ -426,7 +426,6 @@ Resources:
 #        TransitGatewayId: !Ref TransitGatewayId
 #
 #  # VPCR53PrivateHostedZoneTemplate creates a private Route 53 hosted zone
-#  # "${WFName}.${Environment}.useast1.awslordabbett.com" and link it to the VPC.
 #  VPCR53PrivateHostedZoneTemplate:
 #    Type: AWS::CloudFormation::Stack
 #    Properties:
