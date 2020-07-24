@@ -96,3 +96,21 @@ Resources:
         WFName: !Ref WFName
         Environment: !Ref Environment
         CFTemplateS3Path: !Ref CFTemplateS3Path
+
+  # CommDebugTemplate: very simple template, deploys very small (t3.nano) instances into every
+  #   every subnet of the VPC. this is done to help debug any TCP/IP communication issues that
+  #   could come as a result of subnet configuration differences: route table, NACL, etc
+  #   these communication debug instances do have the EC2 role to allow SSM Session Mnanager to ssh in and
+  #   open remote sessoins through AWS Web Console.
+  CommDebugTemplate:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: VPCTemplate
+    Condition: CreateCommDebugCondition
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_040_03_comm_debug_ec2_instances.yaml
+      Parameters:
+        WFName: !Ref WFName
+        Environment: !Ref Environment
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        KeyPairName: "keypair-urbaninst-dev-ec2"

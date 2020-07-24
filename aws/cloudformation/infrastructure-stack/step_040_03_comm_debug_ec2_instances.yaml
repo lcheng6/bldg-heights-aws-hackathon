@@ -41,7 +41,7 @@ Mappings:
     WorkflowPrimary: #TODO: get from AWS infrastructure team your VPC and subnet assignments and VPC names
       CIDR:  10.0.0.0/20
       Region: us-east-1
-      ExportName: vpc-backres-prod-useast1
+      ExportName: vpc-urbaninst-devuseast1
 #    SharedServicesPrimary:
 #      CIDR: 10.70.0.0/20
 #      Region: us-east-1
@@ -51,32 +51,32 @@ Mappings:
       CIDR: 10.0.0.0/23
       AZ: us-east-1a
       Name: subn.martech.dev.work.useast1.az1
-      ExportName: subn-martech-dev-work-useast1-az1
+      ExportName: subn-urbaninst-dev-work-useast1-az1
     WorkflowSubnet2:
       CIDR: 10.0.2.0/23
       AZ: us-east-1b
       Name: subn.martech.dev.work.useast1.az2
-      ExportName: subn-martech-dev-work-useast1-az2
+      ExportName: subn-urbaninst-dev-work-useast1-az2
     WorkflowSubnet3:
       CIDR: 10.0.4.0/23
       AZ: us-east-1c
       Name: subn.urbanist.dev.work.useast1.az3
-      ExportName: subn-urbanist-dev-work-useast1-az3
+      ExportName: subn-urbaninst-dev-work-useast1-az3
     ProxySubnet1:
       CIDR: 10.0.8.0/23
       AZ: us-east-1a
       Name: subn.urbanist.dev.proxy.useast1.az1
-      ExportName: subn-urbanist-dev-proxy-useast1-az1
+      ExportName: subn-urbaninst-dev-proxy-useast1-az1
     ProxySubnet2:
       CIDR: 10.0.10.0/23
       AZ: us-east-1b
       Name: subn.urbanist.dev.proxy.useast1.az2
-      ExportName: subn-urbanist-dev-proxy-useast1-az2
+      ExportName: subn-urbaninst-dev-proxy-useast1-az2
     ProxySubnet3:
       CIDR: 10.0.12.0/23
       AZ: us-east-1c
       Name: subn.urbanist.dev.proxy.useast1.az3
-      ExportName: subn-urbanist-dev-proxy-useast1-az3
+      ExportName: subn-urbaninst-dev-proxy-useast1-az3
 
 
 Resources:
@@ -98,7 +98,7 @@ Resources:
           DeviceIndex: 0
           GroupSet:
             - Fn::ImportValue:
-                !Sub "sg-${WFName}-${Environment}-commdebug-AWS::Region"
+                !Sub "sg-${WFName}-${Environment}-commdebug-${AWS::Region}"
           SubnetId:
             Fn::ImportValue:
               !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet1, ExportName]
