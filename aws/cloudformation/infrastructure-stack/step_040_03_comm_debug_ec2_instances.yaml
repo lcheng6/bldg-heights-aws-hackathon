@@ -47,40 +47,58 @@ Mappings:
 #      Region: us-east-1
 
   WorkflowPrimarySubnets: #TODO: create appropriate names and subnets allocation or your VPC, also change subn.workflow to something appropriate
-    WorkflowSubnet1:
+    PrivateSubnet1:
       CIDR: 10.0.0.0/23
       AZ: us-east-1a
       Name: subn.martech.dev.work.useast1.az1
-      ExportName: subn-urbaninst-dev-work-useast1-az1
-    WorkflowSubnet2:
+      ExportName: subn-urbaninst-dev-private-useast1-az1
+    PrivateSubnet2:
       CIDR: 10.0.2.0/23
-      AZ: us-east-1b
+      AZ: us-east-1bsour
       Name: subn.martech.dev.work.useast1.az2
-      ExportName: subn-urbaninst-dev-work-useast1-az2
-    WorkflowSubnet3:
+      ExportName: subn-urbaninst-dev-private-useast1-az2
+    PrivateSubnet3:
       CIDR: 10.0.4.0/23
       AZ: us-east-1c
       Name: subn.urbanist.dev.work.useast1.az3
-      ExportName: subn-urbaninst-dev-work-useast1-az3
-    ProxySubnet1:
+      ExportName: subn-urbaninst-dev-private-useast1-az3
+    PublicSubnet1:
       CIDR: 10.0.8.0/23
       AZ: us-east-1a
       Name: subn.urbanist.dev.proxy.useast1.az1
-      ExportName: subn-urbaninst-dev-proxy-useast1-az1
-    ProxySubnet2:
+      ExportName: subn-urbaninst-dev-public-useast1-az1
+    PublicSubnet2:
       CIDR: 10.0.10.0/23
       AZ: us-east-1b
       Name: subn.urbanist.dev.proxy.useast1.az2
-      ExportName: subn-urbaninst-dev-proxy-useast1-az2
-    ProxySubnet3:
+      ExportName: subn-urbaninst-dev-public-useast1-az2
+    PublicSubnet3:
       CIDR: 10.0.12.0/23
       AZ: us-east-1c
       Name: subn.urbanist.dev.proxy.useast1.az3
-      ExportName: subn-urbaninst-dev-proxy-useast1-az3
+      ExportName: subn-urbaninst-dev-public-useast1-az3
 
 
 Resources:
-  WorkflowSubnet1CommDebug:
+  CommDebug1EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref PublicSubnet1CommDebug
+
+  CommDebug2EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref PublicSubnet2CommDebug
+
+  CommDebug3EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref PublicSubnet3CommDebug
+
+  PrivateSubnet1CommDebug:
     Type: "AWS::EC2::Instance"
     Properties:
       IamInstanceProfile:
@@ -101,7 +119,7 @@ Resources:
                 !Sub "sg-${WFName}-${Environment}-commdebug-${AWS::Region}"
           SubnetId:
             Fn::ImportValue:
-              !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet1, ExportName]
+              !FindInMap [WorkflowPrimarySubnets, PrivateSubnet1, ExportName]
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
           Ebs:
@@ -122,7 +140,7 @@ Resources:
         - Key: Function
           Value: Comm Debug Server
 
-  WorkflowSubnet2CommDebug:
+  PrivateSubnet2CommDebug:
     Type: "AWS::EC2::Instance"
     Properties:
       IamInstanceProfile:
@@ -143,7 +161,7 @@ Resources:
                 !Sub "sg-${WFName}-${Environment}-commdebug-${AWS::Region}"
           SubnetId:
             Fn::ImportValue:
-              !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet2, ExportName]
+              !FindInMap [WorkflowPrimarySubnets, PrivateSubnet2, ExportName]
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
           Ebs:
@@ -164,7 +182,7 @@ Resources:
         - Key: Function
           Value: Comm Debug Server
 
-  WorkflowSubnet3CommDebug:
+  PrivateSubnet3CommDebug:
     Type: "AWS::EC2::Instance"
     Properties:
       IamInstanceProfile:
@@ -185,7 +203,7 @@ Resources:
                 !Sub "sg-${WFName}-${Environment}-commdebug-${AWS::Region}"
           SubnetId:
             Fn::ImportValue:
-              !FindInMap [WorkflowPrimarySubnets, WorkflowSubnet3, ExportName]
+              !FindInMap [WorkflowPrimarySubnets, PrivateSubnet3, ExportName]
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
           Ebs:
@@ -208,7 +226,7 @@ Resources:
 
 
 # proxy subnets check
-  ProxySubnet1CommDebug:
+  PublicSubnet1CommDebug:
     Type: "AWS::EC2::Instance"
     Properties:
       IamInstanceProfile:
@@ -229,7 +247,7 @@ Resources:
                 !Sub "sg-${WFName}-${Environment}-commdebug-${AWS::Region}"
           SubnetId:
             Fn::ImportValue:
-              !FindInMap [WorkflowPrimarySubnets, ProxySubnet1, ExportName]
+              !FindInMap [WorkflowPrimarySubnets, PublicSubnet1, ExportName]
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
           Ebs:
@@ -250,7 +268,7 @@ Resources:
         - Key: Function
           Value: Comm Debug Server
 
-  ProxySubnet2CommDebug:
+  PublicSubnet2CommDebug:
     Type: "AWS::EC2::Instance"
     Properties:
       IamInstanceProfile:
@@ -271,7 +289,7 @@ Resources:
                 !Sub "sg-${WFName}-${Environment}-commdebug-${AWS::Region}"
           SubnetId:
             Fn::ImportValue:
-              !FindInMap [WorkflowPrimarySubnets, ProxySubnet2, ExportName]
+              !FindInMap [WorkflowPrimarySubnets, PublicSubnet2, ExportName]
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
           Ebs:
@@ -292,7 +310,7 @@ Resources:
         - Key: Function
           Value: Comm Debug Server
 
-  ProxySubnet3CommDebug:
+  PublicSubnet3CommDebug:
     Type: "AWS::EC2::Instance"
     Properties:
       IamInstanceProfile:
@@ -313,7 +331,7 @@ Resources:
                 !Sub "sg-${WFName}-${Environment}-commdebug-${AWS::Region}"
           SubnetId:
             Fn::ImportValue:
-              !FindInMap [WorkflowPrimarySubnets, ProxySubnet3, ExportName]
+              !FindInMap [WorkflowPrimarySubnets, PublicSubnet3, ExportName]
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
           Ebs:

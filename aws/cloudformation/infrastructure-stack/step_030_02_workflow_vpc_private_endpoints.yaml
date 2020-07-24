@@ -18,7 +18,7 @@ Parameters:
   CFTemplateS3Path:
     Type: String
 
-  ProxySubnetsList:
+  PublicSubnetsList:
     Type: CommaDelimitedList
 
   VPCEndpointSecurityGroupId:
@@ -40,9 +40,9 @@ Resources:
 #    Type: AWS::EC2::TransitGatewayAttachment
 #    Properties:
 #      SubnetIds:
-#        - !Select [0, !Ref ProxySubnetsList]
-#        - !Select [1, !Ref ProxySubnetsList]
-#        - !Select [2, !Ref ProxySubnetsList]
+#        - !Select [0, !Ref PublicSubnetsList]
+#        - !Select [1, !Ref PublicSubnetsList]
+#        - !Select [2, !Ref PublicSubnetsList]
 #      Tags:
 #        - Key: WFName
 #          Value: !Ref WFName
@@ -67,9 +67,9 @@ Resources:
       VpcEndpointType: Interface
       PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
       SubnetIds:
-        - !Select [0, !Ref ProxySubnetsList]
-        - !Select [1, !Ref ProxySubnetsList]
-        - !Select [2, !Ref ProxySubnetsList]
+        - !Select [0, !Ref PublicSubnetsList]
+        - !Select [1, !Ref PublicSubnetsList]
+        - !Select [2, !Ref PublicSubnetsList]
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroupId
 
@@ -81,9 +81,9 @@ Resources:
       VpcEndpointType: Interface
       PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
       SubnetIds:
-        - !Select [0, !Ref ProxySubnetsList]
-        - !Select [1, !Ref ProxySubnetsList]
-        - !Select [2, !Ref ProxySubnetsList]
+        - !Select [0, !Ref PublicSubnetsList]
+        - !Select [1, !Ref PublicSubnetsList]
+        - !Select [2, !Ref PublicSubnetsList]
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroupId
 
@@ -95,9 +95,9 @@ Resources:
       VpcEndpointType: Interface
       PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
       SubnetIds:
-        - !Select [0, !Ref ProxySubnetsList]
-        - !Select [1, !Ref ProxySubnetsList]
-        - !Select [2, !Ref ProxySubnetsList]
+        - !Select [0, !Ref PublicSubnetsList]
+        - !Select [1, !Ref PublicSubnetsList]
+        - !Select [2, !Ref PublicSubnetsList]
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroupId
 
@@ -109,9 +109,9 @@ Resources:
       VpcEndpointType: Interface
       PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
       SubnetIds:
-        - !Select [0, !Ref ProxySubnetsList]
-        - !Select [1, !Ref ProxySubnetsList]
-        - !Select [2, !Ref ProxySubnetsList]
+        - !Select [0, !Ref PublicSubnetsList]
+        - !Select [1, !Ref PublicSubnetsList]
+        - !Select [2, !Ref PublicSubnetsList]
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroupId
 
@@ -123,9 +123,9 @@ Resources:
       VpcEndpointType: Interface
       PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
       SubnetIds:
-        - !Select [0, !Ref ProxySubnetsList]
-        - !Select [1, !Ref ProxySubnetsList]
-        - !Select [2, !Ref ProxySubnetsList]
+        - !Select [0, !Ref PublicSubnetsList]
+        - !Select [1, !Ref PublicSubnetsList]
+        - !Select [2, !Ref PublicSubnetsList]
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroupId
 
@@ -137,9 +137,9 @@ Resources:
       VpcEndpointType: Interface
       PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
       SubnetIds:
-        - !Select [0, !Ref ProxySubnetsList]
-        - !Select [1, !Ref ProxySubnetsList]
-        - !Select [2, !Ref ProxySubnetsList]
+        - !Select [0, !Ref PublicSubnetsList]
+        - !Select [1, !Ref PublicSubnetsList]
+        - !Select [2, !Ref PublicSubnetsList]
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroupId
 
@@ -151,9 +151,9 @@ Resources:
       VpcEndpointType: Interface
       PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
       SubnetIds:
-        - !Select [0, !Ref ProxySubnetsList]
-        - !Select [1, !Ref ProxySubnetsList]
-        - !Select [2, !Ref ProxySubnetsList]
+        - !Select [0, !Ref PublicSubnetsList]
+        - !Select [1, !Ref PublicSubnetsList]
+        - !Select [2, !Ref PublicSubnetsList]
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroupId
 
@@ -165,9 +165,9 @@ Resources:
       VpcEndpointType: Interface
       PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
       SubnetIds:
-        - !Select [0, !Ref ProxySubnetsList]
-        - !Select [1, !Ref ProxySubnetsList]
-        - !Select [2, !Ref ProxySubnetsList]
+        - !Select [0, !Ref PublicSubnetsList]
+        - !Select [1, !Ref PublicSubnetsList]
+        - !Select [2, !Ref PublicSubnetsList]
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroupId
 
@@ -179,9 +179,9 @@ Resources:
       VpcEndpointType: Interface
       PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
       SubnetIds:
-        - !Select [0, !Ref ProxySubnetsList]
-        - !Select [1, !Ref ProxySubnetsList]
-        - !Select [2, !Ref ProxySubnetsList]
+        - !Select [0, !Ref PublicSubnetsList]
+        - !Select [1, !Ref PublicSubnetsList]
+        - !Select [2, !Ref PublicSubnetsList]
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroupId
 
@@ -193,9 +193,9 @@ Resources:
 #      VpcEndpointType: Interface
 #      PrivateDnsEnabled: !Ref VPCEndpointPrivateDnsEnabled
 #      SubnetIds:
-#        - !Select [0, !Ref ProxySubnetsList]
-#        - !Select [1, !Ref ProxySubnetsList]
-#        - !Select [2, !Ref ProxySubnetsList]
+#        - !Select [0, !Ref PublicSubnetsList]
+#        - !Select [1, !Ref PublicSubnetsList]
+#        - !Select [2, !Ref PublicSubnetsList]
 #      SecurityGroupIds:
 #        - !Ref VPCEndpointSecurityGroupId
 
