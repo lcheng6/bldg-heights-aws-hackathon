@@ -55,28 +55,28 @@ Resources:
       PermissionsBoundary: !Ref IAMRolePermissionBoundary
 
 
-  Dome9ConnectRole:
-    Type: AWS::IAM::Role
-    Properties:
-      Description: "Allow Dome9 to Connect and Scan Account"
-      Path: "/"
-      RoleName: !Sub "role.infranetsec.${WFName}.${Environment}.dome9connect" #Can not have the WFName and Environment name in the RoleName, as it needs to be consistent across all environments
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: arn:aws:iam::634729597623:root #this is the Dome 9's root account
-            Action: sts:AssumeRole
-            Condition:
-              StringEquals:
-                sts:ExternalId: "8C2ROUgfZRlWlU2NGemkZlS9 " #value given by Dome9
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/SecurityAudit
-        - arn:aws:iam::aws:policy/AmazonInspectorReadOnlyAccess
-        - !Ref EC2BasicLoggingPolicy
-        - !Ref Dome9ReadOnlyPolicy
-      PermissionsBoundary: !Ref IAMRolePermissionBoundary
+#  Dome9ConnectRole:
+#    Type: AWS::IAM::Role
+#    Properties:
+#      Description: "Allow Dome9 to Connect and Scan Account"
+#      Path: "/"
+#      RoleName: !Sub "role.infranetsec.${WFName}.${Environment}.dome9connect" #Can not have the WFName and Environment name in the RoleName, as it needs to be consistent across all environments
+#      AssumeRolePolicyDocument:
+#        Version: '2012-10-17'
+#        Statement:
+#          - Effect: Allow
+#            Principal:
+#              AWS: arn:aws:iam::634729597623:root #this is the Dome 9's root account
+#            Action: sts:AssumeRole
+#            Condition:
+#              StringEquals:
+#                sts:ExternalId: "8C2ROUgfZRlWlU2NGemkZlS9 " #value given by Dome9
+#      ManagedPolicyArns:
+#        - arn:aws:iam::aws:policy/SecurityAudit
+#        - arn:aws:iam::aws:policy/AmazonInspectorReadOnlyAccess
+#        - !Ref EC2BasicLoggingPolicy
+#        - !Ref Dome9ReadOnlyPolicy
+#      PermissionsBoundary: !Ref IAMRolePermissionBoundary
 
   CommDebugInstanceProfile:
     Type: "AWS::IAM::InstanceProfile"

@@ -44,7 +44,7 @@ Resources:
           - !Ref Environment
           - cloudtrail
           - !Ref AWS::Region
-      RetentionInDays: 3653 #FedRAMP requirement 7 years, cloud trail is also exported to S3
+      RetentionInDays: 365 #FedRAMP requirement 7 years, cloud trail is also exported to S3
 
   CloudTrailRole:
     Type: 'AWS::IAM::Role'
