@@ -62,3 +62,40 @@ Resources:
             Principal:
               Service:
                 - ecs-tasks.amazonaws.com
+
+  LidarProcessingLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      RetentionInDays: 3
+
+  LidarProcessingTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      NetworkMode: awsvpc
+      Family: !Sub ${WFName}-${Environment}-lidarprocessing
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 1vCPU
+      ExecutionRoleArn: !GetAtt
+        - TaskExecutionRole
+        - Arn
+#      Volumes: #TODO: do I need this? Ask AWS Support
+#        - Host: {}
+#          Name: data_volume
+      Memory: 4GB
+      TaskRoleArn: !GetAtt
+        - DataS3BucketReadWriteRole
+        - Arn
+      ContainerDefinitions:
+        -
+#          MountPoints:
+#            - SourceVolume: data_volume
+#              ContainerPath: /usr/local/tomcat/logs
+          Name: !Sub ${WFName}-${Environment}-lidarprocessing
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/repo-urbaninst-dev-lidarprocessing:latest
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-group: !Ref LidarProcessingLogGroup
+              awslogs-stream-prefix: ecs

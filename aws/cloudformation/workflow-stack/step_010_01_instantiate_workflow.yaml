@@ -43,3 +43,13 @@ Resources:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
         Environment: dev
+
+  ECRTasksAndServicesTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_020_03_ecr_tasks_and_services.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev
