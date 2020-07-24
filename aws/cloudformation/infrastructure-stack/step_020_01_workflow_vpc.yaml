@@ -212,7 +212,7 @@ Resources:
         - Key: Type
           Value: routetable
         - Key: Name
-          Value: !Sub "rt.${WFName}.${Environment}.worksubnet.${AWS::Region}.az1"
+          Value: !Sub "rt.${WFName}.${Environment}.privatesubnet.${AWS::Region}.az1"
 
   PrivateSubnetRouteTable2:
     Type: "AWS::EC2::RouteTable"
@@ -222,7 +222,7 @@ Resources:
         - Key: Type
           Value: routetable
         - Key: Name
-          Value: !Sub "rt.${WFName}.${Environment}.worksubnet.${AWS::Region}.az2"
+          Value: !Sub "rt.${WFName}.${Environment}.privatesubnet.${AWS::Region}.az2"
 
   PrivateSubnetRouteTable3:
     Type: "AWS::EC2::RouteTable"
@@ -232,7 +232,7 @@ Resources:
         - Key: Type
           Value: routetable
         - Key: Name
-          Value: !Sub "rt.${WFName}.${Environment}.worksubnet.${AWS::Region}.az3"
+          Value: !Sub "rt.${WFName}.${Environment}.privatesubnet.${AWS::Region}.az3"
 
   PrivateSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
