@@ -13,6 +13,6 @@
   },
   {
     "ParameterKey": "CreateCommDebug",
-    "ParameterValue": "true"
+    "ParameterValue": "false"
   }
 ]
