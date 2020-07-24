@@ -9,7 +9,6 @@ Parameters:
 
   CFTemplateS3Path:
     Type: String
-    Default: https://s3.amazonaws.com/cf-templates-j3atw72be18l-us-east-1/sharedservices-useast1-cf-templates
 
   Environment:
     Type: String
@@ -21,4 +20,59 @@ Parameters:
     Default: cf-templates-j3atw72be18l-us-east-1
 
 Resources:
-  #
+  LidarProcessingECRRepo:
+    Type: "AWS::ECR::Repository"
+    Properties:
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+              "rules": [
+                  {
+                      "rulePriority": 1,
+                      "description": "Expire images older than 14 days",
+                      "selection": {
+                          "tagStatus": "untagged",
+                          "countType": "sinceImagePushed",
+                          "countUnit": "days",
+                          "countNumber": 14
+                      },
+                      "action": {
+                          "type": "expire"
+                      }
+                  }
+              ]
+          }
+      RepositoryName: !Sub repo-${WFName}-${Environment}-lidarprocessing
+      RepositoryPolicyText: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "codebuild_policy",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "codebuild.amazonaws.com"
+              },
+              "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:GetDownloadUrlForLayer"
+              ]
+            }
+          ]
+        }
+      Tags:
+        - Key: Name
+          Value: !Sub lidar-process-container-container-${Environment}
+
+Outputs:
+
+  LidarProcessingECRRepoArn:
+    Value: !GetAtt LidarProcessingECRRepo.Arn
+    Export:
+      Name: !Sub repo-${WFName}-${Environment}-lidarprocessing-arn
+
+  LidarProcessingECRRepoName:
+    Value: !Ref LidarProcessingECRRepo
+    Export:
+      Name: !Sub repo-${WFName}-${Environment}-lidarprocessing-name

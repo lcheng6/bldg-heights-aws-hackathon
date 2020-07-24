@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "CFTemplateS3Path",
+    "ParameterValue": "https://s3.amazonaws.com/cf-templates-j3atw72be18l-us-east-1/urban-institute-workflow-stack"
+  },
+  {
+    "ParameterKey": "WFName",
+    "ParameterValue": "urbaninst"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
+  }
+]

@@ -9,21 +9,20 @@ Parameters:
 
   CFTemplateS3Path:
     Type: String
-    Default: https://s3.amazonaws.com/cf-templates-j3atw72be18l-us-east-1/sharedservices-useast1-cf-templates
 
   Environment:
     Type: String
     AllowedValues: [dev, test, prod]
     Default: dev
 
-  CreateCommDebug:
-    Type: String
-    Default: false
-    AllowedValues: [true, false]
-
-  CloudFormationS3Bucket:
-    Type: String
-    Default: cf-templates-j3atw72be18l-us-east-1
-
 Resources:
-  #
+
+  ECRReposTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_020_01_ecr_repos.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev

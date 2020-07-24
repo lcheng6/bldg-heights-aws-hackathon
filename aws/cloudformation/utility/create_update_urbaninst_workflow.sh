@@ -46,15 +46,15 @@ then
         #do update
         aws cloudformation update-stack --stack-name $stackName \
             --template-url https://s3.amazonaws.com/${cloudformation_bucket}/urban-institute-workflow-stack/step_010_01_instantiate_workflow.yaml \
-            --parameters file://../infrastructure-stack/workflow-stack-params.json \
+            --parameters file://../workflow-stack/workflow-stack-params.json \
             --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
 
     elif [ "X$action" == "Xcreate" ]
     then
         #do create
         aws cloudformation create-stack --stack-name $stackName \
-            --template-url https://s3.amazonaws.com/${cloudformation_bucket}/infrastructure-stack/step_010_01_instantiate_workflow.yaml \
-            --parameters file://../infrastructure-stack/workflow-stack-params.json \
+            --template-url https://s3.amazonaws.com/${cloudformation_bucket}/urban-institute-workflow-stack/step_010_01_instantiate_workflow.yaml \
+            --parameters file://../workflow-stack/workflow-stack-params.json \
             --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
 
     elif [ "X$action" == "Xwait" ]
