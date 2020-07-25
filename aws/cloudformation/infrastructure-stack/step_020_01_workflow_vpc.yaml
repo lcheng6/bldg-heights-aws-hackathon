@@ -33,32 +33,32 @@ Mappings:
     PrivateSubnet1:
       CIDR: 10.0.0.0/23
       AZ: us-east-1a
-      Name: subn.urbaninst.dev.work.useast1.az1
+      Name: subn.urbaninst.dev.private.useast1.az1
       ExportName: subn-urbaninst-dev-private-useast1-az1
     PrivateSubnet2:
       CIDR: 10.0.2.0/23
       AZ: us-east-1b
-      Name: subn.urbaninst.dev.work.useast1.az2
+      Name: subn.urbaninst.dev.private.useast1.az2
       ExportName: subn-urbaninst-dev-private-useast1-az2
     PrivateSubnet3:
       CIDR: 10.0.4.0/23
       AZ: us-east-1c
-      Name: subn.urbaninst.dev.work.useast1.az3
+      Name: subn.urbaninst.dev.private.useast1.az3
       ExportName: subn-urbaninst-dev-private-useast1-az3
     PublicSubnet1:
       CIDR: 10.0.8.0/23
       AZ: us-east-1a
-      Name: subn.urbaninst.dev.proxy.useast1.az1
+      Name: subn.urbaninst.dev.public.useast1.az1
       ExportName: subn-urbaninst-dev-public-useast1-az1
     PublicSubnet2:
       CIDR: 10.0.10.0/23
       AZ: us-east-1b
-      Name: subn.urbaninst.dev.proxy.useast1.az2
+      Name: subn.urbaninst.dev.public.useast1.az2
       ExportName: subn-urbaninst-dev-public-useast1-az2
     PublicSubnet3:
       CIDR: 10.0.12.0/23
       AZ: us-east-1c
-      Name: subn.urbaninst.dev.proxy.useast1.az3
+      Name: subn.urbaninst.dev.public.useast1.az3
       ExportName: subn-urbaninst-dev-public-useast1-az3
 
 Resources:
