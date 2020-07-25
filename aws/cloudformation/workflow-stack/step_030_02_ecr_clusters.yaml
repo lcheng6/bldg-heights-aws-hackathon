@@ -32,7 +32,14 @@ Resources:
 
   ECSCluster: #Fargate only
     Type: 'AWS::ECS::Cluster'
-
+    Properties:
+      ClusterName: !Sub ecscluster-${WFName}-${Environment}
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+      Tags:
+        - Value: !Ref Environment
+          Key: Environment
   #create the launch template and ECS Auto scaling groups here
 
 
