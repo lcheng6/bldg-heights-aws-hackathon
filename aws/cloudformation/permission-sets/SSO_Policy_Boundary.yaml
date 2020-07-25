@@ -1,0 +1,163 @@
+Version: 2012-10-17
+Statement:
+  - Action:
+      - 'account:*'
+      - 'organizations:*'
+    Resource: "*"
+    Effect: Deny
+    Sid: PreventAccountOrganizationsUsage
+
+  - Action:
+      - 'iam:*'
+    Resource: arn:aws:iam::*:user/*.infranetseccf
+    Effect: Deny
+    Sid: DenyAnyChangesToInfraNetSeccfUser
+  - Condition:
+      StringNotLike:
+        'iam:PermissionsBoundary': 'arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary'
+    Action:
+      - 'iam:CreateRole'
+    Resource: '*'
+    Effect: Deny
+    Sid: MustCreateRoleWithPermissionsBoundaryInPlace
+  - Condition:
+      StringNotLike:
+        'iam:PermissionsBoundary': 'arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary'
+    Action:
+      - 'iam:CreateUser'
+    Resource: '*'
+    Effect: Deny
+    Sid: MustCreateUserWithPermissionsBoundaryInPlace
+  - Action:
+      - 'iam:DeleteRolePermissionsBoundary'
+      - 'iam:DeleteUserPermissionsBoundary'
+    Resource: '*'
+    Effect: Deny
+    Sid: MustNotRemovePermissionsBoundary
+  - Condition:
+      StringNotLike:
+        'iam:PermissionsBoundary':
+          - 'arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary'
+          - 'arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary'
+    Action:
+      - 'iam:PutRolePermissionsBoundary'
+      - 'iam:PutUserPermissionsBoundary'
+    Resource: '*'
+    Effect: Deny
+    Sid: MustNotPutWrongRolePermissionsBoundary
+  - Action:
+      - 'iam:CreatePolicy'
+      - 'iam:CreatePolicyVersion'
+      - 'iam:DeletePolicy'
+      - 'iam:DeletePolicyVersion'
+      - 'iam:SetDefaultPolicyVersion'
+    Resource:
+      - 'arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary'
+      - 'arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary'
+    Effect: Deny
+    Sid: MustNotModifyPermissionsBoundary
+  - Action:
+      - 'account:ListRegions'
+      - 'iam:GenerateCredentialReport'
+      - 'iam:GenerateServiceLastAccessedDetails'
+      - 'iam:Get*'
+      - 'iam:List*'
+      - 'iam:SimulateCustomPolicy'
+      - 'iam:SimulatePrincipalPolicy'
+    Resource: '*'
+    Effect: Allow
+  - Action:
+      - 'iam:CreatePolicyVersion'
+      - 'iam:DeletePolicy'
+      - 'iam:DeletePolicyVersion'
+      - 'iam:SetDefaultPolicyVersion'
+    Resource:
+      - 'arn:aws:iam::876799588475:policy/KL2Tech*'
+      - 'arn:aws:iam::876799588475:policy/KL2Tech/*'
+    Effect: Deny
+    Sid: NoBoundaryPolicyEdit
+  - Action:
+      - 'iam:DeleteRolePermissionsBoundary'
+      - 'iam:DeleteUserPermissionsBoundary'
+      - 'config:Delete*'
+      - 'config:DeliverConfigSnapshot'
+      - 'config:Put*'
+      - 'config:Start*'
+      - 'config:Stop*'
+      - 'ec2:AdvertiseByoipCidr'
+      - 'ec2:ProvisionByoipCidr'
+      - 'ec2:DeprovisionByoipCidr'
+      - 'ec2:WithdrawByoipCidr'
+      - 'ec2:EnableVpcClassic*'
+      - 'ec2:DisableVpcClassic*'
+      - 'ec2:AttachClassicLinkVpc'
+      - 'ec2:DetachClassicLinkVpc'
+      - 'ec2:MoveAddressToVpc'
+      - 'ec2:Attach*Gateway*'
+      - 'ec2:Create*Gateway*'
+      - 'ec2:Delete*Gateway*'
+      - 'ec2:Detach*Gateway*'
+      - 'ec2:CreateSubnet'
+      - 'ec2:DeleteSubnet'
+      - 'ec2:AssociateSubnet*'
+      - 'ec2:DisassociateSubnet*'
+      - 'ec2:ModifySubnetAttribute'
+      - 'ec2:CreateVpc'
+      - 'ec2:DeleteVpc'
+      - 'ec2:AssociateVpc*'
+      - 'ec2:DisassociateVpc*'
+      - 'ec2:CreateVpcPeer*'
+      - 'ec2:AcceptVpcPeer*'
+      - 'ec2:RejectVpcPeer*'
+      - 'ec2:DeleteVpcPeer*'
+      - 'ec2:ModifyVpcPeer*'
+      - 'ec2:CreateVpn*'
+      - 'ec2:DeleteVpn*'
+      - 'directconnect:Allocate*'
+      - 'directconnect:Associate*'
+      - 'directconnect:Confirm*'
+      - 'directconnect:Create*'
+      - 'directconnect:Delete*'
+      - 'directconnect:*Loa'
+      - 'directconnect:Disassociate*'
+      - 'directconnect:Tag*'
+      - 'directconnect:Untag*'
+      - 'directconnect:Update*'
+    Resource: '*'
+    Effect: Deny
+    Sid: DenyNetworkLevelChanges
+  - Condition:
+      StringNotLike:
+        'aws:RequestedRegion':
+          - us-*
+          - eu-west-1
+    Action:
+      - 'ec2:*'
+      - 'lambda:*'
+      - 'rds:*'
+      - 's3:*'
+      - 'elasticfilesystem:*'
+      - 'backup:*'
+      - 'es:*'
+      - 'dynamodb:*'
+    Resource: '*'
+    Effect: Deny
+  - Condition:
+      BoolIfExists:
+        'ec2:Encrypted': 'false'
+    Action:
+      - 'ec2:AttachVolume'
+      - 'ec2:CreateSnapshot'
+      - 'ec2:CreateSnapshots'
+      - 'ec2:CreateVolume'
+      - 'ec2:DeleteVolume'
+      - 'ec2:DetachVolume'
+    Resource: '*'
+    Effect: Deny
+  - Condition:
+      BoolIfExists:
+        'rds:StorageEncrypted': 'false'
+    Action:
+      - 'rds:CreateDBInstance'
+    Resource: '*'
+    Effect: Deny

@@ -1,0 +1,136 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Resource": "*",
+      "Effect": "Allow",
+      "NotAction": [
+        "account:*",
+        "iam:*",
+        "organizations:*"
+      ]
+    },
+    {
+      "Action": [
+        "iam:*"
+      ],
+      "Resource": "arn:aws:iam::*:user/*.infranetseccf",
+      "Effect": "Deny",
+      "Sid": "DenyAnyChangesToInfraNetSeccfUser"
+    },
+    {
+      "Condition": {
+        "StringEquals": {
+          "iam:PermissionsBoundary": "arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary"
+        }
+      },
+      "Action": [
+        "iam:CreateUser",
+        "iam:DeleteUserPolicy",
+        "iam:AttachUserPolicy",
+        "iam:DetachUserPolicy",
+        "iam:PutUserPermissionsBoundary"
+      ],
+      "Resource": "*",
+      "Effect": "Allow",
+      "Sid": "CreateOrChangeIAMUserOnlyWithBoundaryInPlace"
+    },
+    {
+      "Condition": {
+        "StringEquals": {
+          "iam:PermissionsBoundary": "arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary"
+        }
+      },
+      "Action": [
+        "iam:CreateRole",
+        "iam:DeleteRolePolicy",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:PutRolePermissionsBoundary"
+      ],
+      "Resource": "*",
+      "Effect": "Allow",
+      "Sid": "CreateOrChangeIAMRoleOnlyWithBoundaryInPlace"
+    },
+    {
+      "Action": [
+        "account:ListRegions",
+        "iam:GenerateCredentialReport",
+        "iam:GenerateServiceLastAccessedDetails",
+        "iam:Get*",
+        "iam:List*",
+        "iam:SimulateCustomPolicy",
+        "iam:SimulatePrincipalPolicy"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    },
+    {
+      "Action": [
+        "iam:CreatePolicyVersion",
+        "iam:DeletePolicy",
+        "iam:DeletePolicyVersion",
+        "iam:SetDefaultPolicyVersion"
+      ],
+      "Resource": [
+        "arn:aws:iam::931047198824:policy/KL2Tech*",
+        "arn:aws:iam::931047198824:policy/KL2Tech/*"
+      ],
+      "Effect": "Deny",
+      "Sid": "NoBoundaryPolicyEdit"
+    },
+    {
+      "Action": [
+        "iam:DeleteRolePermissionsBoundary",
+        "iam:DeleteUserPermissionsBoundary",
+        "config:Delete*",
+        "config:DeliverConfigSnapshot",
+        "config:Put*",
+        "config:Start*",
+        "config:Stop*",
+        "ec2:AdvertiseByoipCidr",
+        "ec2:ProvisionByoipCidr",
+        "ec2:DeprovisionByoipCidr",
+        "ec2:WithdrawByoipCidr",
+        "ec2:EnableVpcClassic*",
+        "ec2:DisableVpcClassic*",
+        "ec2:AttachClassicLinkVpc",
+        "ec2:DetachClassicLinkVpc",
+        "ec2:MoveAddressToVpc",
+        "ec2:Attach*Gateway*",
+        "ec2:Create*Gateway*",
+        "ec2:Delete*Gateway*",
+        "ec2:Detach*Gateway*",
+        "ec2:CreateSubnet",
+        "ec2:DeleteSubnet",
+        "ec2:AssociateSubnet*",
+        "ec2:DisassociateSubnet*",
+        "ec2:ModifySubnetAttribute",
+        "ec2:CreateVpc",
+        "ec2:DeleteVpc",
+        "ec2:AssociateVpc*",
+        "ec2:DisassociateVpc*",
+        "ec2:CreateVpcPeer*",
+        "ec2:AcceptVpcPeer*",
+        "ec2:RejectVpcPeer*",
+        "ec2:DeleteVpcPeer*",
+        "ec2:ModifyVpcPeer*",
+        "ec2:CreateVpn*",
+        "ec2:DeleteVpn*",
+        "directconnect:Allocate*",
+        "directconnect:Associate*",
+        "directconnect:Confirm*",
+        "directconnect:Create*",
+        "directconnect:Delete*",
+        "directconnect:*Loa",
+        "directconnect:Disassociate*",
+        "directconnect:Tag*",
+        "directconnect:Untag*",
+        "directconnect:Update*"
+      ],
+      "Resource": "*",
+      "Effect": "Deny",
+      "Sid": "DenyNetworkLevelChanges"
+    }
+  ]
+}
