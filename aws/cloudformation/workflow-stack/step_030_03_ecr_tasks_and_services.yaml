@@ -79,7 +79,7 @@ Resources:
       ExecutionRoleArn: !GetAtt
         - TaskExecutionRole
         - Arn
-      Volumes: 
+      Volumes:
         - Host: {}
           Name: data_volume
       Memory: 4GB
