@@ -79,18 +79,18 @@ Resources:
       ExecutionRoleArn: !GetAtt
         - TaskExecutionRole
         - Arn
-#      Volumes: #TODO: do I need this? Ask AWS Support
-#        - Host: {}
-#          Name: data_volume
+      Volumes: 
+        - Host: {}
+          Name: data_volume
       Memory: 4GB
       TaskRoleArn: !GetAtt
         - DataS3BucketReadWriteRole
         - Arn
       ContainerDefinitions:
         -
-#          MountPoints:
-#            - SourceVolume: data_volume
-#              ContainerPath: /usr/local/tomcat/logs
+          MountPoints:
+            - SourceVolume: data_volume
+              ContainerPath: /tmp
           Name: !Sub ${WFName}-${Environment}-lidarprocessing
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/repo-urbaninst-dev-lidarprocessing:latest
           LogConfiguration:
