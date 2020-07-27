@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Urban Insitute Workflow Security Groups
+
+Parameters:
+
+  WFName:
+    Type: String
+
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+
+  CFTemplateS3Path:
+    Type: String
+
+#  DataloaderIamInstanceProfile:
+#    Type: String
+
+  DataLoaderEC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+
+  DataloaderSubnet:
+    Type: AWS::EC2::Subnet::Id
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+
+Mappings:
+  AMI:
+    "us-east-1":
+      ubuntu1804: "ami-0ac80df6eff0e70b5"
+      amazonlinux2: "ami-08f3d892de259504d"
+    "us-east-2":
+      ubuntu1804: "ami-0a63f96e85105c6d3"
+      amazonlinux2: "ami-016b213e65284e9c9"
+
+Resources:
+
+  DataloaderEC2EIP:
+    Type: AWS::EC2::EIP
+
+  DataloaderEC2PublicENI:
+    Type: "AWS::EC2::NetworkInterface"
+    Properties:
+      Description: Dataloader EC2 to run dataload scripts
+      GroupSet:
+        - Ref: DataLoaderEC2SecurityGroup
+      SubnetId:
+        Ref: DataloaderSubnet
+      Tags:
+        - Key: Project
+          Value: census
+        - Key: VPC
+          Value: !Ref VpcId
+#        - Key: Name
+#          Value: !Join [ "-", [ !Ref VPCName, "VPN1PrivateENI"]]
+
+  DataloaderEC2PublicENIAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !Ref DataloaderEC2EIP
+      NetworkInterfaceId: !Ref DataloaderEC2PublicENI
+
+#  DataloaderEC2Instance:
+#    Type: "AWS::EC2::Instance"
+#    Properties:
+#      IamInstanceProfile: !Ref DataloaderIamInstanceProfile
+#      ImageId: "ami-20920e5a"
+#      InstanceType: t3a.micro
+#      KeyName: census-shared-services-key
+#      NetworkInterfaces:
+#        - NetworkInterfaceId: !Ref DataloaderEC2PublicENI
+#          DeviceIndex: '0'
+#      BlockDeviceMappings:
+#        - DeviceName: "/dev/xvda"
+#          Ebs:
+#            VolumeType: gp2
+#            DeleteOnTermination: true
+#            VolumeSize: 25
+#      Tags:
+#        - Key: Project
+#          Value: census
+#        - Key: VPC
+#          Value: !Ref VpcId
+#  #      - Key: Name
+#  #        Value: !Join [ "-", [ !Ref VPCName, "V"]]

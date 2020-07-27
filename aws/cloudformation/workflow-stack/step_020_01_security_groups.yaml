@@ -37,9 +37,33 @@ Resources:
       GroupDescription: Urban Institute Data Job Security Group
       VpcId: !Ref VpcId
 
+  DataLoaderEC2SecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "sg.${WFName}.${Environment}.dataloaderec2.${AWS::Region}"
+      GroupDescription: Urban Institute Data Loader EC2 Security Group
+      VpcId: !Ref VpcId
+
+  DataLoaderServerSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "sg.${WFName}.${Environment}.dataloaderservice.${AWS::Region}"
+      GroupDescription: Urban Institute Data Loader HTTP Service Security Group
+      VpcId: !Ref VpcId
+
 
 Outputs:
   DataJobFargateTaskSecurityGroup:
     Value: !GetAtt DataJobFargateTaskSecurityGroup.GroupId
     Export:
       Name: !Sub "sg-${WFName}-${Environment}-datajob-${AWS::Region}"
+
+  DataLoaderEC2SecurityGroup:
+    Value: !GetAtt DataLoaderEC2SecurityGroup.GroupId
+    Export:
+      Name: !Sub "sg-${WFName}-${Environment}-dataloaderec2-${AWS::Region}"
+
+  DataLoaderServerSecurityGroup:
+    Value: !GetAtt DataLoaderServerSecurityGroup.GroupId
+    Export:
+      Name: !Sub "sg-${WFName}-${Environment}-dataloaderservice-${AWS::Region}"
