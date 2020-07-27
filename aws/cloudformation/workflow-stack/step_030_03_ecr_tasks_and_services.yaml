@@ -91,7 +91,7 @@ Resources:
           entryPoint: [
             "python3",
             "/root/las-to-sql-processor.py"
-          ],
+          ]
           MountPoints:
             - SourceVolume: data_volume
               ContainerPath: /tmp

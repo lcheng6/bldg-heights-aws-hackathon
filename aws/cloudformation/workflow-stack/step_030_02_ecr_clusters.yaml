@@ -33,6 +33,9 @@ Resources:
   ECSCluster: #Fargate only
     Type: 'AWS::ECS::Cluster'
     Properties:
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
       ClusterName: !Sub ecscluster-${WFName}-${Environment}
       ClusterSettings:
         - Name: containerInsights
