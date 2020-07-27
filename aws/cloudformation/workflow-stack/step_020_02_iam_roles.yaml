@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Urban Insitute Workflow Security Groups
+
+Parameters:
+
+  WFName:
+    Type: String
+
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+
+  CFTemplateS3Path:
+    Type: String
+
+Resources:

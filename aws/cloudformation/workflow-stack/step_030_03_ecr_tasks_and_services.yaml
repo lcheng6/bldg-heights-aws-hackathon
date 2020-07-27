@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  ECR Repos, currently containing data processing repos
+
+Parameters:
+  WFName:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+
+Mappings:
+  ResourceAllocation:
+    LidarProcessing:
+      Cpu: 50
+      Memory: 50
+
+Resources:
+
+  DataS3BucketReadWriteRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess #TODO: tighten this down to just the s3 bucket
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+
+  TaskExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: taskexecution-ssm
+          PolicyDocument:
+            Statement:
+              - Action:
+                  - 'kms:Decrypt'
+                  - 'ssm:GetParameters'
+                  - 'secretsmanager:GetSecretValue'
+                Resource: '*'
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+
+  LidarProcessingLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      RetentionInDays: 3
+
+  LidarProcessingTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      NetworkMode: awsvpc
+      Family: !Sub ${WFName}-${Environment}-lidarprocessing
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 1vCPU
+      ExecutionRoleArn: !GetAtt
+        - TaskExecutionRole
+        - Arn
+      Volumes:
+        - Host: {}
+          Name: data_volume
+      Memory: 4GB
+      TaskRoleArn: !GetAtt
+        - DataS3BucketReadWriteRole
+        - Arn
+      ContainerDefinitions:
+        -
+          entryPoint: [
+            "python3",
+            "/root/las-to-sql-processor.py"
+          ]
+          MountPoints:
+            - SourceVolume: data_volume
+              ContainerPath: /tmp
+          Name: !Sub ${WFName}-${Environment}-lidarprocessing
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/repo-urbaninst-dev-lidarprocessing:latest
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-group: !Ref LidarProcessingLogGroup
+              awslogs-stream-prefix: ecs

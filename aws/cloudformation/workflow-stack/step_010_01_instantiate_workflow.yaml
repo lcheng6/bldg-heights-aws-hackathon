@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Urban Institute workflows:
+  * Compute resources: any ECR or EC2 cluster
+  * Repo resources: ECR Container repo and code commit resources
+  * Data pipelines
+  * Databases
+  * Sagemaker/Jupyter notebooks
+
+Parameters:
+  WFName:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+
+Mappings:
+  GlobalParams:
+    Vpc:
+      VpcId: vpc-0884aba75474c5a4d
+      VpcCidr: "10.0.0.0/20"
+      PrivateSubnets: "subnet-0f2296d1facaad0d1,subnet-076aed91c3669be38,subnet-04b284cd9799f101b"
+      PublicSubnets: "subnet-07d1e64a658e5d40c,subnet-0ecb2878f52b8d153,subnet-00f970f7a1365d359"
+
+Resources:
+
+  WorkflowSecurityGroupsTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_020_01_security_groups.yaml
+      Parameters:
+        WFName: !Ref WFName
+        Environment: dev
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
+        VpcCidr: !FindInMap [GlobalParams, Vpc, VpcCidr]
+
+
+#  WorkflowIAMRolesTemplate:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_020_02_iam_roles.yaml
+#      Parameters:
+#        WFName: !Ref WFName
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        Environment: dev
+
+  ECRReposTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_030_01_ecr_repos.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev
+
+  #create the ECR Fargate cluster to run any thing significant
+  #at the present time, we will only create a fargate cluster to run any data processing job
+  ECRClusterResourcesTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_030_02_ecr_clusters.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev
+
+  ECRTasksAndServicesTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_030_03_ecr_tasks_and_services.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev

@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Urban Insitute Workflow Security Groups
+
+Parameters:
+
+  WFName:
+    Type: String
+
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+
+  CFTemplateS3Path:
+    Type: String
+
+  VpcId:
+    Description: "ID of the VPC to build Security Groups in"
+    Type: AWS::EC2::VPC::Id
+
+  VpcCidr:
+    Description: "The IP CIDR of your source IP Addres"
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: "This must be a valid CIDR range in form of x.x.x.x/x"
+
+
+Resources:
+  DataJobFargateTaskSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "sg.${WFName}.${Environment}.datajob.${AWS::Region}"
+      GroupDescription: Urban Institute Data Job Security Group
+      VpcId: !Ref VpcId
+
+
+Outputs:
+  DataJobFargateTaskSecurityGroup:
+    Value: !GetAtt DataJobFargateTaskSecurityGroup.GroupId
+    Export:
+      Name: !Sub "sg-${WFName}-${Environment}-datajob-${AWS::Region}"

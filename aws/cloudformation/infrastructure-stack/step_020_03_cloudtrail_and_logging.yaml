@@ -1,0 +1,376 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Martech VPC Flow log, Account CloudTrail, S3 Server Level logs, and S3 data objects logs
+
+Parameters:
+
+  #  CrossAccountLoggingS3BucketName:
+  #    Description: "S3 bucket on Audit Logging account that will host cloud trail logs"
+  #    Type: "String"
+  #    ConstraintDescription : "Must be lower case and DNS compatible"
+  #    AllowedPattern : "[a-z0-9.-]+"
+
+  WFName:
+    Description: "The name and purpose of the project"
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  Environment:
+    Type: String
+
+  LocalAccountLoggingS3BucketName:
+    Description: "S3 bucket in this account that will host local cloud trail logs"
+    Type: "String"
+    ConstraintDescription : "Must be lower case and DNS compatible"
+    AllowedPattern : "[a-z0-9.-]+"
+
+  VPCID:
+    Description: "CT Master VPC"
+    Type: AWS::EC2::VPC::Id
+
+Resources:
+
+  CwLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Join
+        - '-'
+        - - log
+          - !Ref WFName
+          - !Ref Environment
+          - cloudtrail
+          - !Ref AWS::Region
+      RetentionInDays: 365 #FedRAMP requirement 7 years, cloud trail is also exported to S3
+
+  CloudTrailRole:
+    Type: 'AWS::IAM::Role'
+    DependsOn: CwLogGroup
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: !Join
+        - ''
+        - - /
+          - !Ref WFName
+          - /
+      Policies:
+        - PolicyName: !Join
+            - '-'
+            - - !Ref WFName
+              - PermitVpcFlowLogs
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: AWSCloudTrailCreateLogStream
+                Effect: Allow
+                Action:
+                  - 'logs:CreateLogStream'
+                Resource:
+                  - !Join
+                    - ''
+                    - - 'arn:aws:logs:'
+                      - !Ref 'AWS::Region'
+                      - ':'
+                      - !Ref 'AWS::AccountId'
+                      - ':log-group:'
+                      - !Ref CwLogGroup
+                      - ':log-stream:'
+                      - !Ref 'AWS::AccountId'
+                      - _CloudTrail_
+                      - !Ref 'AWS::Region'
+                      - '*'
+              - Sid: AWSCloudTrailPutLogEvents
+                Effect: Allow
+                Action:
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - !Join
+                    - ''
+                    - - 'arn:aws:logs:'
+                      - !Ref 'AWS::Region'
+                      - ':'
+                      - !Ref 'AWS::AccountId'
+                      - ':log-group:'
+                      - !Ref CwLogGroup
+                      - ':log-stream:'
+                      - !Ref 'AWS::AccountId'
+                      - _CloudTrail_
+                      - !Ref 'AWS::Region'
+                      - '*'
+      RoleName: !Sub 'role.infranetsec.${WFName}.${Environment}.cloudtrail'
+
+  CloudTrailTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: AWS CloudTrail Notification Topic
+      TopicName: !Join
+        - '-'
+        - - topic
+          - !Ref WFName
+          - !Ref Environment
+          - cloudtrail
+          - !Ref AWS::Region
+      Subscription:
+        - Endpoint: !GetAtt CloudTrailSQS.Arn
+          Protocol: sqs
+
+  CloudTrailTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref CloudTrailTopic
+      PolicyDocument:
+        Version: 2008-10-17
+        Id: __default_policy_ID
+        Statement:
+          -
+            Sid: CloudTrailTopic_statement_ID
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - SNS:GetTopicAttributes
+              - SNS:SetTopicAttributes
+              - SNS:AddPermission
+              - SNS:RemovePermission
+              - SNS:DeleteTopic
+              - SNS:Subscribe
+              - SNS:ListSubscriptionsByTopic
+              - SNS:Publish
+              - SNS:Receive
+            Resource: !Ref CloudTrailTopic
+            Condition:
+              StringEquals:
+                AWS:SourceOwner: !Ref AWS::AccountId
+          -
+            Sid: AWSCloudTrailSNSPolicy20150319
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: SNS:Publish
+            Resource: !Ref CloudTrailTopic
+
+  CloudTrailSQS:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: !Join
+        - '-'
+        - - queue
+          - !Ref WFName
+          - !Ref Environment
+          - cloudtrail
+          - !Ref AWS::Region
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt CloudTrailDeadLetterSQS.Arn
+        maxReceiveCount: 3
+
+  CloudTrailDeadLetterSQS:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: !Join
+        - '-'
+        - - dlqueue
+          - !Ref WFName
+          - !Ref Environment
+          - cloudtrail
+          - !Ref AWS::Region
+
+  CloudTrailSQSPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Id: CloudTrailSQSPolicy
+        Statement:
+          -
+            Sid: Allow-SendMessage-To-Both-Queues-From-SNS-Topic
+            Effect: Allow
+            Principal: "*"
+            Action: ["sqs:SendMessage"]
+            Resource: "*"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !Ref CloudTrailTopic
+      Queues:
+        - !Ref CloudTrailSQS
+
+  CloudTrailKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "CMK for local Cloudtrail"
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Id: "key-default-1"
+        Statement:
+          - Sid: "Enable IAM User Permissions"
+            Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Sid: "Allow administration of the key"
+            Effect: "Allow"
+            Principal:
+              AWS: "arn:aws:iam::876799588475:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_AWSAdministratorAccess_f79017142b2e8350"
+            Action:
+              - "kms:Create*"
+              - "kms:Describe*"
+              - "kms:Enable*"
+              - "kms:List*"
+              - "kms:Put*"
+              - "kms:Update*"
+              - "kms:Revoke*"
+              - "kms:Disable*"
+              - "kms:Get*"
+              - "kms:Delete*"
+              - "kms:ScheduleKeyDeletion"
+              - "kms:CancelKeyDeletion"
+            Resource: "*"
+          - Sid: "Allow use of the key"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action:
+              - "kms:DescribeKey"
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey"
+              - "kms:GenerateDataKeyWithoutPlaintext"
+            Resource: "*"
+
+  CloudTrailKMSKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/LocalCloudTrailKMSKey
+      TargetKeyId: !Ref CloudTrailKMSKey
+
+  CloudTrail:
+    DependsOn:
+      - CwLogGroup
+      - CloudTrailRole
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      CloudWatchLogsLogGroupArn: !GetAtt CwLogGroup.Arn
+      CloudWatchLogsRoleArn: !GetAtt CloudTrailRole.Arn
+      EnableLogFileValidation: true
+      EventSelectors:
+        - DataResources:
+            - Type: 'AWS::S3::Object'
+              Values:
+                - 'arn:aws:s3:::'
+          IncludeManagementEvents: true
+          ReadWriteType: 'All'
+      IncludeGlobalServiceEvents: true
+      IsLogging: true
+      IsMultiRegionTrail: true
+      S3BucketName: !Ref LocalAccountLoggingS3BucketName
+      SnsTopicName: !GetAtt CloudTrailTopic.TopicName
+      KMSKeyId: !Ref CloudTrailKMSKeyAlias
+      Tags:
+        - Key: WFName
+          Value: !Ref WFName
+        - Key: Type
+          Value: cloudtrail
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - trail
+              - !Ref WFName
+              - !Ref Environment
+              - cloudtrail
+              - !Ref AWS::Region
+      TrailName: !Join
+        - '-'
+        - - trail
+          - !Ref WFName
+          - !Ref Environment
+          - cloudtrail
+          - !Ref AWS::Region
+
+  VpcFlowLog:
+    Type: AWS::EC2::FlowLog
+    Properties:
+      DeliverLogsPermissionArn: !GetAtt VpcFlowLogsRole.Arn
+#      LogGroupName: !Join
+#        - '-'
+#        - - flowlog
+#          - !Ref WFName
+#          - !Ref Environment
+#          - vpcflowlog
+#          - !Ref AWS::Region
+      LogDestination: !GetAtt VpcFlowLogsLogGroup.Arn
+      LogDestinationType: cloud-watch-logs
+      ResourceId: !Ref VPCID
+      ResourceType: VPC
+      TrafficType: ALL
+
+  VpcFlowLogsLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Join
+        - '-'
+        - - log
+          - !Ref WFName
+          - !Ref Environment
+          - vpcflowlog
+          - !Ref AWS::Region
+      RetentionInDays: 365 #Local storage for 1 yr, flow log is also exported to ShrSrv ES
+
+  VpcFlowLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - vpc-flow-logs.amazonaws.com
+      Path: '/'
+      RoleName: !Join
+        - '.'
+        - - role
+          - !Ref WFName
+          - !Ref Environment
+          - vpcflowlog
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
+
+#TODO: build outputs
+Outputs:
+  VpcFlowLogsLogGroup:
+    Value: !Ref VpcFlowLogsLogGroup
+
+  VpcFlowLogsLogGroupArn:
+    Value: !GetAtt VpcFlowLogsLogGroup.Arn
+
+  VpcFlowLog:
+    Value: !Ref VpcFlowLog
+
+  CloudTrailLogGroupName:
+    Value: !Ref CwLogGroup

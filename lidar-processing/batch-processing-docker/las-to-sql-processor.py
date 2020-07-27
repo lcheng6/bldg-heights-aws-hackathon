@@ -113,8 +113,8 @@ def las_to_sql(laskeyname):
     keysequencenum = laskeyname.split('.')[0] #get the #### of the file "####.las"
     sqlfilename = f"{keysequencenum}.sql"
     csvfilename = f"{keysequencenum}.csv"
-    upload_las_data_to_s3_bucket(sqlfilename, "additional-test-datasets", "bldg-height/las-sql-statements-v2-1")
-    upload_las_data_to_s3_bucket(csvfilename, "additional-test-datasets", "bldg-height/las-csv-statements-v2-1")
+    upload_las_data_to_s3_bucket(sqlfilename, "urban-institute-datasets", "bldg-height/las-sql-statements-v2-1")
+    upload_las_data_to_s3_bucket(csvfilename, "urban-institute-datasets", "bldg-height/las-csv-statements-v2-1")
 
 if __name__ == "__main__":
     las_to_sql(args.laskey)

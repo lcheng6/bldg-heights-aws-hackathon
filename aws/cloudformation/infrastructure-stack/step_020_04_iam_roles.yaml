@@ -1,0 +1,580 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Martech IAM Roles
+
+Parameters:
+  WFName:
+    Type: String
+
+  Environment:
+    Type: String
+    Default: prod
+
+  CFTemplateS3Path:
+    Type: String
+
+  ShrsrvAccountId:
+    Type: String
+    Default: 876799588475
+
+Resources:
+
+  CrossAccountEC2ReadFromShrsrvRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: "Allow Shrsrv to get EC2 data including security groups info"
+      Path: "/"
+      RoleName: !Sub "role.infranetsec.ec2readonlyfromshrsrv" #Can not have the WFName and Environment name in the RoleName, as it needs to be consistent across all environments
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref ShrsrvAccountId
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess
+        - !Ref EC2BasicLoggingPolicy
+      PermissionsBoundary: !Ref IAMRolePermissionBoundary
+
+  CommDebugEC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: "/"
+      RoleName: !Sub "role.infranetsec.${WFName}.${Environment}.commdebug"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+        - !Ref EC2BasicLoggingPolicy
+      PermissionsBoundary: !Ref IAMRolePermissionBoundary
+
+
+#  Dome9ConnectRole:
+#    Type: AWS::IAM::Role
+#    Properties:
+#      Description: "Allow Dome9 to Connect and Scan Account"
+#      Path: "/"
+#      RoleName: !Sub "role.infranetsec.${WFName}.${Environment}.dome9connect" #Can not have the WFName and Environment name in the RoleName, as it needs to be consistent across all environments
+#      AssumeRolePolicyDocument:
+#        Version: '2012-10-17'
+#        Statement:
+#          - Effect: Allow
+#            Principal:
+#              AWS: arn:aws:iam::634729597623:root #this is the Dome 9's root account
+#            Action: sts:AssumeRole
+#            Condition:
+#              StringEquals:
+#                sts:ExternalId: "8C2ROUgfZRlWlU2NGemkZlS9 " #value given by Dome9
+#      ManagedPolicyArns:
+#        - arn:aws:iam::aws:policy/SecurityAudit
+#        - arn:aws:iam::aws:policy/AmazonInspectorReadOnlyAccess
+#        - !Ref EC2BasicLoggingPolicy
+#        - !Ref Dome9ReadOnlyPolicy
+#      PermissionsBoundary: !Ref IAMRolePermissionBoundary
+
+  CommDebugInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Path: '/'
+      Roles:
+        - !Ref CommDebugEC2Role
+      InstanceProfileName: !Sub "instprof.infranetsec.${WFName}.${Environment}.commdebug"
+
+
+  #------- Begin Managed IAM Policy Section -------#
+  Dome9ReadOnlyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Dome9 Read Only Policy
+      ManagedPolicyName: Dome9ReadOnlyPolicy
+      Path: "/"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Dome9ReadOnly
+            Action:
+              - cloudtrail:LookupEvents
+              - dynamodb:DescribeTable
+              - elasticfilesystem:Describe*
+              - elasticache:ListTagsForResource
+              - firehose:Describe*
+              - firehose:List*
+              - guardduty:Get*
+              - guardduty:List*
+              - kinesis:List*
+              - kinesis:Describe*
+              - kinesisvideo:Describe*
+              - kinesisvideo:List*
+              - logs:Describe*
+              - logs:Get*
+              - logs:FilterLogEvents
+              - lambda:List*
+              - s3:List*
+              - sns:ListSubscriptions
+              - sns:ListSubscriptionsByTopic
+              - waf-regional:ListResourcesForWebACL
+            Effect: Allow
+            Resource: "*"
+
+
+  EC2BasicLoggingPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Basic EC2 CloudWatch Logging Policy
+      ManagedPolicyName: KL2TechEC2BasicCloudWatchLogging
+      Path: "/"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource: "*"
+
+  LogBucketsReadPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Basic EC2 CloudWatch Logging Policy
+      ManagedPolicyName: KL2TechSharedServicesLogBucketReadOnlyPolicy
+      Path: "/"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "s3:Get*"
+              - "s3:List*"
+            Resource:
+              - "*" #TODO, modify this to the specific S3 bucket of log archive account
+
+  CloudWatchLogToESDelivery:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Lambda Delivery of Cloudwatch logs to ES
+      ManagedPolicyName: KL2TechCwlToESDeliveryPolicy
+      Path: "/"
+      PolicyDocument:
+        "Version": "2012-10-17"
+        "Statement":
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource:
+              - "arn:aws:logs:*:*:*"
+          - Effect: "Allow"
+            Action: "es:ESHttpPost"
+            Resource:
+              - "arn:aws:es:*:*:*"
+
+  IAMUserPermissionBoundary:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: IAM User Permission Boundary
+      Path: "/"
+      ManagedPolicyName: KL2TechIAMUserPermissionBoundary
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            NotAction:
+              - account:*
+              - organizations:*
+            Resource: "*"
+
+          - Action:
+              - 'iam:*'
+            Resource: arn:aws:iam::*:user/*.infranetseccf
+            Effect: Deny
+            Sid: DenyAnyChangesToInfraNetSeccfUser
+
+          - Sid: MustCreateRoleWithPermissionsBoundaryInPlace
+            Condition:
+              StringNotLike:
+                'iam:PermissionsBoundary': 'arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary'
+            Action:
+              - 'iam:CreateRole'
+            Resource: '*'
+            Effect: Deny
+
+          - Sid: MustCreateUserWithPermissionsBoundaryInPlace
+            Condition:
+              StringNotLike:
+                'iam:PermissionsBoundary': 'arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary'
+            Action:
+              - 'iam:CreateUser'
+            Resource: '*'
+            Effect: Deny
+
+          - Sid: MustNotRemovePermissionsBoundary
+            Action:
+              - 'iam:DeleteRolePermissionsBoundary'
+              - 'iam:DeleteUserPermissionsBoundary'
+            Resource: '*'
+            Effect: Deny
+
+          - Sid: MustNotPutWrongRolePermissionsBoundary
+            Condition:
+              StringNotLike:
+                'iam:PermissionsBoundary':
+                  - 'arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary'
+                  - 'arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary'
+            Action:
+              - 'iam:PutRolePermissionsBoundary'
+              - 'iam:PutUserPermissionsBoundary'
+            Resource: '*'
+            Effect: Deny
+
+          - Sid: MustNotModifyPermissionsBoundary
+            Action:
+              - 'iam:CreatePolicy'
+              - 'iam:CreatePolicyVersion'
+              - 'iam:DeletePolicy'
+              - 'iam:DeletePolicyVersion'
+              - 'iam:SetDefaultPolicyVersion'
+            Resource:
+              - 'arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary'
+              - 'arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary'
+            Effect: Deny
+
+          - Sid: MustNotTerminateInfrastructureStack
+            Action:
+              - 'cloudformation:Delete*'
+              - 'cloudformation:Update*'
+              - 'cloudformation:Create*'
+            Resource:
+              - 'arn:aws:cloudformation:*:*:stack/KL2TechInfraNetSec*'
+              - 'arn:aws:cloudformation:*:*:stack/StackSet-*'
+            Effect: Deny
+
+          - Action:
+              - 'iam:CreatePolicy'
+              - 'iam:CreatePolicyVersion'
+              - 'iam:DeletePolicy'
+              - 'iam:DeletePolicyVersion'
+              - 'iam:SetDefaultPolicyVersion'
+            Resource:
+              - 'arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary'
+              - 'arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary'
+            Effect: Deny
+          - Effect: Allow
+            Action:
+              - account:ListRegions
+              - iam:GenerateCredentialReport
+              - iam:GenerateServiceLastAccessedDetails
+              - iam:Get*
+              - iam:List*
+              - iam:SimulateCustomPolicy
+              - iam:SimulatePrincipalPolicy
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - iam:PassRole
+            NotResource:
+              - arn:aws:iam::*:role/aws-controltower-*
+              - arn:aws:iam::*:role/AWSControlTower*
+              - arn:aws:iam::*:role/AWSReservedSSO*
+          - Effect: Allow
+            Action:
+              - iam:CreateAccessKey
+              - iam:DeleteAccessKey
+              - iam:UpdateAccessKey
+            Resource:
+              - !Join
+                - ""
+                - - !Sub arn:aws:iam::${AWS::AccountId}
+                  - :user/${aws:username}
+          - Sid: DenyNetworkLevelChanges
+            Effect: Deny
+            Action:
+              - iam:DeleteRolePermissionsBoundary
+              - iam:DeleteUserPermissionsBoundary
+              - config:Delete*
+              - config:DeliverConfigSnapshot
+              - config:Put*
+              - config:Start*
+              - config:Stop*
+              - ec2:AdvertiseByoipCidr
+              - ec2:ProvisionByoipCidr
+              - ec2:DeprovisionByoipCidr
+              - ec2:WithdrawByoipCidr
+              - ec2:EnableVpcClassic*
+              - ec2:DisableVpcClassic*
+              - ec2:AttachClassicLinkVpc
+              - ec2:DetachClassicLinkVpc
+              - ec2:MoveAddressToVpc
+              - ec2:Attach*Gateway*
+              - ec2:Create*Gateway*
+              - ec2:Delete*Gateway*
+              - ec2:Detach*Gateway*
+              - ec2:CreateSubnet
+              - ec2:DeleteSubnet
+              - ec2:AssociateSubnet*
+              - ec2:DisassociateSubnet*
+              - ec2:ModifySubnetAttribute
+              - ec2:CreateVpc
+              - ec2:DeleteVpc
+              - ec2:AssociateVpc*
+              - ec2:DisassociateVpc*
+              - ec2:CreateVpcPeering*
+              - ec2:AcceptVpcPeer*
+              - ec2:RejectVpcPeer*
+              - ec2:DeleteVpcPeer*
+              - ec2:ModifyVpcPeer*
+              - ec2:CreateVpn*
+              - ec2:DeleteVpn*
+              - ec2:*RouteTable
+              - ec2:DisableTransitGatewayRouteTablePropagation
+              - ec2:ReplaceRouteTableAssociation
+              - directconnect:Allocate*
+              - directconnect:Associate*
+              - directconnect:Confirm*
+              - directconnect:Create*
+              - directconnect:Delete*
+              - directconnect:*Loa
+              - directconnect:Disassociate*
+              - directconnect:Tag*
+              - directconnect:Untag*
+              - directconnect:Update*
+            Resource: "*"
+          - Effect: Deny #Deny critical data storage infrastructure in all but US and EU-West-1 (Ireland)
+            Action:
+              - ec2:*
+              - lambda:*
+              - rds:*
+              - s3:*
+              - elasticfilesystem:*
+              - backup:*
+              - es:*
+              - dynamodb:*
+            Resource: "*"
+            Condition:
+              StringNotLike:
+                aws:RequestedRegion:
+                  - us-*
+                  - eu-west-1 #Ireland
+          - Effect: Deny #Deny creation of unencrypted EBS volume
+            Action:
+              - ec2:AttachVolume
+              - ec2:CreateSnapshot
+              - ec2:CreateSnapshots
+              - ec2:CreateVolume
+              - ec2:DeleteVolume
+              - ec2:DetachVolume
+            Resource: "*"
+            Condition:
+              BoolIfExists:
+                ec2:Encrypted: false
+          - Effect: Deny #Deny creation of unencrypted RDS instance
+            Action:
+              - rds:CreateDBInstance  #these following items might need to be on in the future.
+            Resource: "*"
+            Condition:
+              BoolIfExists:
+                rds:StorageEncrypted: false
+
+  IAMRolePermissionBoundary:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: IAM Role Permission Boundary
+      Path: "/"
+      ManagedPolicyName: KL2TechIAMRolePermissionBoundary
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            NotAction:
+              - account:*
+              - organizations:*
+            Resource: "*"
+
+          - Action:
+              - 'iam:*'
+            Resource: arn:aws:iam::*:user/*.infranetseccf
+            Effect: Deny
+            Sid: DenyAnyChangesToInfraNetSeccfUser
+
+          - Sid: MustCreateRoleWithPermissionsBoundaryInPlace
+            Condition:
+              StringNotLike:
+                'iam:PermissionsBoundary': 'arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary'
+            Action:
+              - 'iam:CreateRole'
+            Resource: '*'
+            Effect: Deny
+
+          - Sid: MustCreateUserWithPermissionsBoundaryInPlace
+            Condition:
+              StringNotLike:
+                'iam:PermissionsBoundary': 'arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary'
+            Action:
+              - 'iam:CreateUser'
+            Resource: '*'
+            Effect: Deny
+
+          - Sid: MustNotRemovePermissionsBoundary
+            Action:
+              - 'iam:DeleteRolePermissionsBoundary'
+              - 'iam:DeleteUserPermissionsBoundary'
+            Resource: '*'
+            Effect: Deny
+
+          - Sid: MustNotPutWrongRolePermissionsBoundary
+            Condition:
+              StringNotLike:
+                'iam:PermissionsBoundary':
+                  - 'arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary'
+                  - 'arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary'
+            Action:
+              - 'iam:PutRolePermissionsBoundary'
+              - 'iam:PutUserPermissionsBoundary'
+            Resource: '*'
+            Effect: Deny
+
+          - Sid: MustNotTerminateInfrastructureStack
+            Action:
+              - 'cloudformation:Delete*'
+              - 'cloudformation:Update*'
+              - 'cloudformation:Create*'
+            Resource:
+              - 'arn:aws:cloudformation:*:*:stack/KL2TechInfraNetSec*'
+              - 'arn:aws:cloudformation:*:*:stack/StackSet-*'
+            Effect: Deny
+
+          - Sid: MustNotModifyPermissionsBoundary
+            Action:
+              - 'iam:CreatePolicy'
+              - 'iam:CreatePolicyVersion'
+              - 'iam:DeletePolicy'
+              - 'iam:DeletePolicyVersion'
+              - 'iam:SetDefaultPolicyVersion'
+            Resource:
+              - 'arn:aws:iam::*:policy/KL2TechIAMRolePermissionBoundary'
+              - 'arn:aws:iam::*:policy/KL2TechIAMUserPermissionBoundary'
+            Effect: Deny
+
+          - Effect: Allow
+            Action:
+              - account:ListRegions
+              - iam:GenerateCredentialReport
+              - iam:GenerateServiceLastAccessedDetails
+              - iam:Get*
+              - iam:List*
+              - iam:SimulateCustomPolicy
+              - iam:SimulatePrincipalPolicy
+            Resource: "*"
+          - Sid: DenyNetworkLevelChanges
+            Effect: Deny
+            Action:
+              - iam:DeleteRolePermissionsBoundary
+              - iam:DeleteUserPermissionsBoundary
+              - config:Delete*
+              - config:DeliverConfigSnapshot
+              - config:Put*
+              - config:Start*
+              - config:Stop*
+              - ec2:AdvertiseByoipCidr
+              - ec2:ProvisionByoipCidr
+              - ec2:DeprovisionByoipCidr
+              - ec2:WithdrawByoipCidr
+              - ec2:EnableVpcClassic*
+              - ec2:DisableVpcClassic*
+              - ec2:AttachClassicLinkVpc
+              - ec2:DetachClassicLinkVpc
+              - ec2:MoveAddressToVpc
+              - ec2:Attach*Gateway*
+              - ec2:Create*Gateway*
+              - ec2:Delete*Gateway*
+              - ec2:Detach*Gateway*
+              - ec2:CreateSubnet
+              - ec2:DeleteSubnet
+              - ec2:AssociateSubnet*
+              - ec2:DisassociateSubnet*
+              - ec2:ModifySubnetAttribute
+              - ec2:CreateVpc
+              - ec2:DeleteVpc
+              - ec2:AssociateVpc*
+              - ec2:DisassociateVpc*
+              - ec2:CreateVpcPeer*
+              - ec2:AcceptVpcPeer*
+              - ec2:RejectVpcPeer*
+              - ec2:DeleteVpcPeer*
+              - ec2:ModifyVpcPeer*
+              - ec2:CreateVpn*
+              - ec2:DeleteVpn*
+              - ec2:*RouteTable
+              - ec2:DisableTransitGatewayRouteTablePropagation
+              - ec2:ReplaceRouteTableAssociation
+              - directconnect:Allocate*
+              - directconnect:Associate*
+              - directconnect:Confirm*
+              - directconnect:Create*
+              - directconnect:Delete*
+              - directconnect:*Loa
+              - directconnect:Disassociate*
+              - directconnect:Tag*
+              - directconnect:Untag*
+              - directconnect:Update*
+            Resource: "*"
+          - Effect: Deny #Deny critical data storage infrastructure in all but US and EU-West-1 (Ireland)
+            Action:
+              - ec2:*
+              - lambda:*
+              - rds:*
+              - s3:*
+              - elasticfilesystem:*
+              - backup:*
+              - es:*
+              - dynamodb:*
+            Resource: "*"
+            Condition:
+              StringNotLike:
+                aws:RequestedRegion:
+                  - us-*
+                  - eu-west-1 #Ireland
+          - Effect: Deny #Deny creation of unencrypted EBS volume
+            Action:
+              - ec2:AttachVolume
+              - ec2:CreateSnapshot
+              - ec2:CreateSnapshots
+              - ec2:CreateVolume
+              - ec2:DeleteVolume
+              - ec2:DetachVolume
+            Resource: "*"
+            Condition:
+              BoolIfExists:
+                ec2:Encrypted: false
+          - Effect: Deny #Deny creation of unencrypted RDS instance
+            Action:
+              - rds:CreateDBInstance  #these following items might need to be on in the future.
+            Resource: "*"
+            Condition:
+              BoolIfExists:
+                rds:StorageEncrypted: false
+  #------- End Managed IAM Policy Section -------#
+
+Outputs:
+
+  CommDebugEC2Role:
+    Value: !Ref CommDebugEC2Role
+    Export:
+      Name: !Sub "role-${WFName}-${Environment}-commdebug"
+
+  CommDebugEC2RoleInstanceProfile:
+    Value: !Ref CommDebugInstanceProfile
+    Export:
+      Name: !Sub "instprof-${WFName}-${Environment}-commdebug"
+
+  CrossAccountEC2ReadFromShrsrvRole:
+    Value: !Ref CrossAccountEC2ReadFromShrsrvRole
+    Export:
+      Name: !Sub "role-${WFName}-${Environment}-ec2readonlyfromshrsrv"

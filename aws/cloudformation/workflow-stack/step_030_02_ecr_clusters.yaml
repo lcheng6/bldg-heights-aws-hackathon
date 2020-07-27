@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Shared Services Template
+
+Parameters:
+  WFName:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+
+Mappings:
+  RegionAmazonLinuxAMIMap:
+    us-east-1:
+      AMI2x86: ami-08f3d892de259504d
+      AMI2Arm: ami-0ba960472fc891755
+    us-east-2:
+      AMI2x86: ami-016b213e65284e9c9
+      AMI2Arm: ami-0e067567dbf210b67
+    us-west-1:
+      AMI2x86: ami-01311df3780ebd33e
+    us-west-2:
+      AMI2x86: ami-0a243dbef00e96192
+
+Resources:
+
+  ECSCluster: #Fargate only
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      ClusterName: !Sub ecscluster-${WFName}-${Environment}
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+      Tags:
+        - Value: !Ref Environment
+          Key: Environment
+  #create the launch template and ECS Auto scaling groups here
+
+
+Outputs:
+  ECSClusterName:
+    Value: !Ref ECSCluster
+    Export:
+      Name: !Sub ecscluster-${WFName}-${Environment}

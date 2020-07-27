@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Martech VPC Security Groups
+
+Parameters:
+
+  WFName:
+    Type: String
+    Default: shrsrv
+
+  VPCId:
+    Description: "ID of the VPC to build Security Groups in"
+    Type: AWS::EC2::VPC::Id
+
+  Environment:
+    Type: String
+    Default: prod
+
+  CFTemplateS3Path:
+    Type: String
+
+  VPCCIDR:
+    Description: "The IP CIDR of your source IP Addres"
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: "This must be a valid CIDR range in form of x.x.x.x/x"
+
+#  AllAWSEnvironmentCIDR:
+#    Description: "The IP CIDR of your source IP Addres"
+#    Type: String
+#    MinLength: 9
+#    MaxLength: 18
+#    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+#    ConstraintDescription: "This must be a valid CIDR range in form of x.x.x.x/x"
+#    Default: 10.0.0.0/8
+
+Resources:
+
+
+  VPCEndpointSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "sg.${WFName}.${Environment}.vpcendpoint.${AWS::Region}"
+      GroupDescription: VPC Private Endpoint Security Group
+      SecurityGroupIngress:
+        - CidrIp: !Ref VPCCIDR
+          Description: "VPC CIDR"
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+      VpcId: !Ref VPCId
+
+  DNSOutboundResolverSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "sg.${WFName}.${Environment}.dnsoutboundresolver.${AWS::Region}"
+      GroupDescription: VPC Conditional R53 Outbound Resolver Security Group
+      SecurityGroupIngress:
+        - CidrIp: !Ref VPCCIDR
+          Description: "VPC CIDR"
+          IpProtocol: tcp
+          FromPort: 53
+          ToPort: 53
+        - CidrIp: !Ref VPCCIDR
+          Description: "VPC CIDR"
+          IpProtocol: udp
+          FromPort: 53
+          ToPort: 53
+      VpcId: !Ref VPCId
+
+  CommDebugSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "sg.${WFName}.${Environment}.commdebug.${AWS::Region}"
+      GroupDescription: Communication Debug Security Group
+      SecurityGroupIngress:
+        - CidrIp: !Ref VPCCIDR
+          Description: "VPC CIDR"
+          IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+        - CidrIp: 0.0.0.0/0
+          Description: "All IP"
+          IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+      VpcId: !Ref VPCId
+
+Outputs:
+  VPCEndpointSecurityGroup:
+    Value: !GetAtt VPCEndpointSecurityGroup.GroupId
+    Export:
+      Name: !Sub "sg-${WFName}-${Environment}-vpcendpoint-${AWS::Region}"
+
+  CommDebugSecurityGroup:
+    Value: !GetAtt CommDebugSecurityGroup.GroupId
+    Export:
+      Name: !Sub "sg-${WFName}-${Environment}-commdebug-${AWS::Region}"
+
+  DNSOutboundResolverSecurityGroup:
+    Value: !GetAtt DNSOutboundResolverSecurityGroup.GroupId
+    Export:
+      Name: !Sub "sg-${WFName}-${Environment}-dnsoutboundresolver-${AWS::Region}"

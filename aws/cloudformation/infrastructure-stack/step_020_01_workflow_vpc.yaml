@@ -1,0 +1,497 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Martech VPC Template
+
+Parameters:
+  WFName:
+    Type: String
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: prod
+
+  CFTemplateS3Path:
+    Type: String
+
+#  TransitGatewayId:
+#    Type: String
+#    Default: tgw-01f33752ab7a2793c
+
+Mappings:
+  VPCInfo:
+    WorkflowPrimary: #TODO: get from AWS infrastructure team your VPC and subnet assignments and VPC names
+      CIDR:  10.0.0.0/20
+      Region: us-east-1
+      ExportName: vpc-urbaninst-dev-useast1
+#    SharedServicesPrimary:
+#      CIDR: 10.70.0.0/20
+#      Region: us-east-1
+
+  WorkflowPrimarySubnets: #TODO: create appropriate names and subnets allocation or your VPC, also change subn.workflow to something appropriate
+    PrivateSubnet1:
+      CIDR: 10.0.0.0/23
+      AZ: us-east-1a
+      Name: subn.urbaninst.dev.private.useast1.az1
+      ExportName: subn-urbaninst-dev-private-useast1-az1
+    PrivateSubnet2:
+      CIDR: 10.0.2.0/23
+      AZ: us-east-1b
+      Name: subn.urbaninst.dev.private.useast1.az2
+      ExportName: subn-urbaninst-dev-private-useast1-az2
+    PrivateSubnet3:
+      CIDR: 10.0.4.0/23
+      AZ: us-east-1c
+      Name: subn.urbaninst.dev.private.useast1.az3
+      ExportName: subn-urbaninst-dev-private-useast1-az3
+    PublicSubnet1:
+      CIDR: 10.0.8.0/23
+      AZ: us-east-1a
+      Name: subn.urbaninst.dev.public.useast1.az1
+      ExportName: subn-urbaninst-dev-public-useast1-az1
+    PublicSubnet2:
+      CIDR: 10.0.10.0/23
+      AZ: us-east-1b
+      Name: subn.urbaninst.dev.public.useast1.az2
+      ExportName: subn-urbaninst-dev-public-useast1-az2
+    PublicSubnet3:
+      CIDR: 10.0.12.0/23
+      AZ: us-east-1c
+      Name: subn.urbaninst.dev.public.useast1.az3
+      ExportName: subn-urbaninst-dev-public-useast1-az3
+
+Resources:
+  WorkflowVPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !FindInMap [VPCInfo, WorkflowPrimary, CIDR]
+      EnableDnsSupport: True
+      EnableDnsHostnames: True
+      InstanceTenancy: default
+      Tags:
+        - Key: Type
+          Value: vpc
+        - Key: Name
+          Value: !Sub "vpc.${Environment}.${AWS::Region}"
+
+  #  ----------- Begin Section Subnets -------------- #
+
+  WorkSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, PrivateSubnet1, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, PrivateSubnet1, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, PrivateSubnet1, Name]
+
+  WorkSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, PrivateSubnet2, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, PrivateSubnet2, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, PrivateSubnet2, Name]
+
+  WorkSubnet3:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, PrivateSubnet3, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, PrivateSubnet3, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, PrivateSubnet3, Name]
+
+  PublicSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, PublicSubnet1, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, PublicSubnet1, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, PublicSubnet1, Name]
+
+  PublicSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, PublicSubnet2, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, PublicSubnet2, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, PublicSubnet2, Name]
+
+  PublicSubnet3:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      CidrBlock: !FindInMap [WorkflowPrimarySubnets, PublicSubnet3, CIDR]
+      AvailabilityZone: !FindInMap [WorkflowPrimarySubnets, PublicSubnet3, AZ]
+      Tags:
+        - Key: Type
+          Value: subnet
+        - Key: Name
+          Value: !FindInMap [WorkflowPrimarySubnets, PublicSubnet3, Name]
+
+  # ---- Begin Section  Route Table and Route Table Association ------ #
+  PublicSubnetRouteTable1:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.publicsubnet.${AWS::Region}.az1"
+
+  PublicSubnetRouteTable2:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.publicsubnet.${AWS::Region}.az2"
+
+  PublicSubnetRouteTable3:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.publicsubnet.${AWS::Region}.az3"
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet1
+      RouteTableId:
+        Ref: PublicSubnetRouteTable1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet2
+      RouteTableId:
+        Ref: PublicSubnetRouteTable2
+
+  PublicSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet3
+      RouteTableId:
+        Ref: PublicSubnetRouteTable3
+
+  PrivateSubnetRouteTable1:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.privatesubnet.${AWS::Region}.az1"
+
+  PrivateSubnetRouteTable2:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.privatesubnet.${AWS::Region}.az2"
+
+  PrivateSubnetRouteTable3:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref WorkflowVPC
+      Tags:
+        - Key: Type
+          Value: routetable
+        - Key: Name
+          Value: !Sub "rt.${WFName}.${Environment}.privatesubnet.${AWS::Region}.az3"
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: WorkSubnet1
+      RouteTableId:
+        Ref: PrivateSubnetRouteTable1
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: WorkSubnet2
+      RouteTableId:
+        Ref: PrivateSubnetRouteTable2
+
+  PrivateSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: WorkSubnet3
+      RouteTableId:
+        Ref: PrivateSubnetRouteTable3
+  # ---- End Section  Route Table and Route Table Association ------ #
+
+  #----- Begin Section Internet Gateway Nat Gateway Endpoint ---------#
+  WorkflowInternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  WorkflowInternetGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      InternetGatewayId: !Ref WorkflowInternetGateway
+      VpcId: !Ref WorkflowVPC
+
+  WorkflowNatGateway1EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: WorkflowInternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  WorkflowNatGateway1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+          - WorkflowNatGateway1EIP
+          - AllocationId
+      SubnetId: !Ref PublicSubnet1
+#      Tags:
+#        - Key: Name
+#          Value: !Join [ "-", [ !Ref VPCName, "NAT-Gateway1"]]
+
+  PrivateSubnet1RouteNAT1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PrivateSubnetRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: WorkflowNatGateway1
+
+  PrivateSubnet2RouteNAT1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PrivateSubnetRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: WorkflowNatGateway1
+
+  PrivateSubnet3RouteNAT1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PrivateSubnetRouteTable3
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: WorkflowNatGateway1
+
+  PublicSubnetRouteTable1Route:
+    Type: AWS::EC2::Route
+    DependsOn: WorkflowInternetGateway
+    Properties:
+      RouteTableId:
+        Ref: PublicSubnetRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: WorkflowInternetGateway
+
+  PublicSubnetRouteTable2Route:
+    Type: AWS::EC2::Route
+    DependsOn: WorkflowInternetGateway
+    Properties:
+      RouteTableId:
+        Ref: PublicSubnetRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: WorkflowInternetGateway
+
+  PublicSubnetRouteTable3Route:
+    Type: AWS::EC2::Route
+    DependsOn: WorkflowInternetGateway
+    Properties:
+      RouteTableId:
+        Ref: PublicSubnetRouteTable3
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: WorkflowInternetGateway
+  #----- End Section Internet Gateway Nat Gateway Endpoint ---------#
+
+  #----- Begin Section VPC Endpoint ---------#
+  S3Endpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:*'
+            Resource:
+              - '*'
+      RouteTableIds:
+        - !Ref PrivateSubnetRouteTable1
+        - !Ref PrivateSubnetRouteTable2
+        - !Ref PrivateSubnetRouteTable3
+#       These subnets don't really need S3 endpoints; you should think about whether to uncomment these lines
+        - !Ref PublicSubnetRouteTable1
+        - !Ref PublicSubnetRouteTable2
+        - !Ref PublicSubnetRouteTable3
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .s3
+      VpcId: !Ref WorkflowVPC
+
+## TODO: evaluate your work load, and see if you need to have a private endpoint to DynamoDB.  If yes, uncommeont these lines
+#  DynamoDBEndpoint:
+#    Type: 'AWS::EC2::VPCEndpoint'
+#    Properties:
+#      RouteTableIds:
+#        - !Ref PrivateSubnetRouteTable1
+#        - !Ref PrivateSubnetRouteTable2
+#        - !Ref PrivateSubnetRouteTable3
+#       These subnets don't really need DDB endpoints; you should think about whether to uncomment these lines
+#        - !Ref PublicSubnetRouteTable1
+#        - !Ref PublicSubnetRouteTable2
+#        - !Ref PublicSubnetRouteTable3
+#      ServiceName: !Join
+#        - ''
+#        - - com.amazonaws.
+#          - !Ref 'AWS::Region'
+#          - .dynamodb
+#      VpcId: !Ref WorkflowVPC
+
+#----- End Section VPC Endpoint ---------#
+
+  # SecurityGroupsTemplate creates a basic set of security groups:
+  #  VPC Endpoints Security Group, DNS Outbound Resolver, Communication Debug EC2s
+  SecurityGroupsTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_030_01_security_groups.yaml
+      Parameters:
+        WFName: !Ref WFName
+        VPCId: !Ref WorkflowVPC
+        Environment: !Ref Environment
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        VPCCIDR: !FindInMap [VPCInfo, WorkflowPrimary, CIDR]
+
+#  # VPCPrivateEndpointsTemplate creates the following endpoints
+#  # S3, SSM, EC2 Logging, Secrets Manager
+#  # not necessary at this point
+#  VPCPrivateEndpointsTemplate:
+#    DependsOn: SecurityGroupsTemplate
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_030_02_workflow_vpc_private_endpoints.yaml
+#      Parameters:
+#        VPCId: !Ref WorkflowVPC
+#        Environment: !Ref Environment
+#        Region: !Ref AWS::Region
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        PublicSubnetsList: !Sub "${PublicSubnet1},${PublicSubnet2},${PublicSubnet3}"
+#        VPCEndpointSecurityGroupId: !GetAtt SecurityGroupsTemplate.Outputs.VPCEndpointSecurityGroup
+#        TransitGatewayId: !Ref TransitGatewayId
+#
+#  # VPCR53PrivateHostedZoneTemplate creates a private Route 53 hosted zone
+#  VPCR53PrivateHostedZoneTemplate:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_030_04_workflow_dns_private_zone.yaml
+#      Parameters:
+#        Region: !Ref AWS::Region
+#        Environment: !Ref Environment
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        VPCId: !Ref WorkflowVPC
+#
+#  # VPCR53PrivateResolversTemplate creates the DNS outbound resolvers
+#  VPCR53PrivateResolversTemplate:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_030_05_workflow_vpc_dns_conditional_forwarders.yaml
+#      Parameters:
+#        VPCId: !Ref WorkflowVPC
+#        Environment: !Ref Environment
+#        Region: !Ref AWS::Region
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        PublicSubnetsList: !Sub "${PublicSubnet1},${PublicSubnet2},${PublicSubnet3}"
+#        PrivateSubnetsList: !Sub "${WorkSubnet1},${WorkSubnet2},${WorkSubnet3}"
+#        DNSResolverSecurityGroupId: !GetAtt SecurityGroupsTemplate.Outputs.DNSOutboundResolverSecurityGroup
+
+Outputs:
+  WorkflowVPC:
+    Description: Sample Workflow VPC ID
+    Value: !Ref WorkflowVPC
+    Export:
+      Name: !FindInMap [ VPCInfo, WorkflowPrimary, ExportName ]
+
+  WorkSubnet1:
+    Description: Work Subnet1 AZ1
+    Value: !Ref WorkSubnet1
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, PrivateSubnet1, ExportName ]
+
+  WorkSubnet2:
+    Description: Work Subnet2 AZ2
+    Value: !Ref WorkSubnet2
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, PrivateSubnet2, ExportName ]
+
+  WorkSubnet3:
+    Description: Work Subnet3 AZ3
+    Value: !Ref WorkSubnet3
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, PrivateSubnet3, ExportName ]
+
+  PublicSubnet1:
+    Description: Proxy Subnet1 AZ1
+    Value: !Ref PublicSubnet1
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, PublicSubnet1, ExportName ]
+
+  PublicSubnet2:
+    Description: Proxy Subnet2 AZ2
+    Value: !Ref PublicSubnet2
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, PublicSubnet2, ExportName ]
+
+  PublicSubnet3:
+    Description: Proxy Subnet3 AZ3
+    Value: !Ref PublicSubnet3
+    Export:
+      Name: !FindInMap [ WorkflowPrimarySubnets, PublicSubnet3, ExportName ]
