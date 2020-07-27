@@ -41,7 +41,7 @@ def initiate_ecs_task_run_for_las_file(lasfilename):
 
 def mainfunction():
   laskeynames = lasutility.get_las_file_names()
-  laskeynames = laskeynames[1:2] #pick a small subset to play with
+  # laskeynames = laskeynames[1:2] #pick a small subset to play with
   for laskeyname in laskeynames:
     keysequencenum = laskeyname.split('.')[0] #get the #### of the file "####.las"
     lasfilename = f"{keysequencenum}.las"
