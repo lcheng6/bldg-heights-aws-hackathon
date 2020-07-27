@@ -41,8 +41,8 @@ Resources:
     Properties:
       Path: /
       ManagedPolicyArns:
-        - >-
-          arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
       Policies:
         - PolicyName: taskexecution-ssm
           PolicyDocument:
@@ -88,6 +88,10 @@ Resources:
         - Arn
       ContainerDefinitions:
         -
+          entryPoint: [
+            "python3",
+            "/root/las-to-sql-processor.py"
+          ],
           MountPoints:
             - SourceVolume: data_volume
               ContainerPath: /tmp
