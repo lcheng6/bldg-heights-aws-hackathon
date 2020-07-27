@@ -28,7 +28,7 @@ Mappings:
       PrivateSubnets: "subnet-0f2296d1facaad0d1,subnet-076aed91c3669be38,subnet-04b284cd9799f101b"
       PublicSubnets: "subnet-07d1e64a658e5d40c,subnet-0ecb2878f52b8d153,subnet-00f970f7a1365d359"
     Deployment:
-      DataloaderEC2Subnet: "subnet-07d1e64a658e5d40"
+      DataloaderEC2Subnet: "subnet-07d1e64a658e5d40c"
 
 
 Resources:
@@ -97,6 +97,7 @@ Resources:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
         Environment: dev
-        DataLoaderEC2SecurityGroup: WorkflowSecurityGroupsTemplate.Outputs.WorkflowSecurityGroupsTemplate
+#        DataloaderIamInstanceProfile: ""
+        DataLoaderEC2SecurityGroup: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.DataLoaderEC2SecurityGroup
         DataloaderSubnet: !FindInMap [GlobalParams, Deployment, DataloaderEC2Subnet]
         VpcId: !FindInMap [GlobalParams, Vpc, VpcId]

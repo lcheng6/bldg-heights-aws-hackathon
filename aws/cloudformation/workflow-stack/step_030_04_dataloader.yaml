@@ -47,9 +47,8 @@ Resources:
     Properties:
       Description: Dataloader EC2 to run dataload scripts
       GroupSet:
-        - Ref: DataLoaderEC2SecurityGroup
-      SubnetId:
-        Ref: DataloaderSubnet
+        - !Ref DataLoaderEC2SecurityGroup
+      SubnetId: !Ref DataloaderSubnet
       Tags:
         - Key: Project
           Value: census
@@ -61,29 +60,32 @@ Resources:
   DataloaderEC2PublicENIAssociation:
     Type: AWS::EC2::EIPAssociation
     Properties:
-      AllocationId: !Ref DataloaderEC2EIP
+      AllocationId: !GetAtt DataloaderEC2EIP.AllocationId
       NetworkInterfaceId: !Ref DataloaderEC2PublicENI
 
-#  DataloaderEC2Instance:
-#    Type: "AWS::EC2::Instance"
-#    Properties:
+  DataloaderEC2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
 #      IamInstanceProfile: !Ref DataloaderIamInstanceProfile
-#      ImageId: "ami-20920e5a"
-#      InstanceType: t3a.micro
-#      KeyName: census-shared-services-key
-#      NetworkInterfaces:
-#        - NetworkInterfaceId: !Ref DataloaderEC2PublicENI
-#          DeviceIndex: '0'
-#      BlockDeviceMappings:
-#        - DeviceName: "/dev/xvda"
-#          Ebs:
-#            VolumeType: gp2
-#            DeleteOnTermination: true
-#            VolumeSize: 25
-#      Tags:
-#        - Key: Project
-#          Value: census
-#        - Key: VPC
-#          Value: !Ref VpcId
-#  #      - Key: Name
-#  #        Value: !Join [ "-", [ !Ref VPCName, "V"]]
+      ImageId: !FindInMap
+        - AMI
+        - !Ref AWS::Region
+        - ubuntu1804
+      InstanceType: t3a.micro
+      KeyName: keypair-urbaninst-dev-ec2
+      NetworkInterfaces:
+        - NetworkInterfaceId: !Ref DataloaderEC2PublicENI
+          DeviceIndex: '0'
+      BlockDeviceMappings:
+        - DeviceName: "/dev/xvda"
+          Ebs:
+            VolumeType: gp2
+            DeleteOnTermination: true
+            VolumeSize: 25
+      Tags:
+        - Key: Project
+          Value: census
+        - Key: VPC
+          Value: !Ref VpcId
+  #      - Key: Name
+  #        Value: !Join [ "-", [ !Ref VPCName, "V"]]
