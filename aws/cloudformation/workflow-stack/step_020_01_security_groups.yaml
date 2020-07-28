@@ -51,6 +51,18 @@ Resources:
       GroupDescription: Urban Institute Data Loader HTTP Service Security Group
       VpcId: !Ref VpcId
 
+  RDSPostgresSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "sg.${WFName}.${Environment}.rdspostgres.${AWS::Region}"
+      GroupDescription: Urban Institute Data Loader HTTP Service Security Group
+      SecurityGroupIngress:
+        - ToPort: 5432
+          IpProtocol: tcp
+          CidrIp: !Ref VpcCidr
+          FromPort: 5432
+      VpcId: !Ref VpcId
+
 
 Outputs:
   DataJobFargateTaskSecurityGroup:
@@ -67,3 +79,8 @@ Outputs:
     Value: !GetAtt DataLoaderServerSecurityGroup.GroupId
     Export:
       Name: !Sub "sg-${WFName}-${Environment}-dataloaderservice-${AWS::Region}"
+
+  RDSDatabaseSecurityGroup:
+    Value: !GetAtt DataLoaderServerSecurityGroup.GroupId
+    Export:
+      Name: !Sub "sg-${WFName}-${Environment}-rdspostgres-${AWS::Region}"
