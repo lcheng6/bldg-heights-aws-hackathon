@@ -81,6 +81,6 @@ Outputs:
       Name: !Sub "sg-${WFName}-${Environment}-dataloaderservice-${AWS::Region}"
 
   RDSDatabaseSecurityGroup:
-    Value: !GetAtt DataLoaderServerSecurityGroup.GroupId
+    Value: !GetAtt RDSPostgresSecurityGroup.GroupId
     Export:
       Name: !Sub "sg-${WFName}-${Environment}-rdspostgres-${AWS::Region}"
