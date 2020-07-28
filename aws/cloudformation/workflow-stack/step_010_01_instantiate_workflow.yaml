@@ -46,15 +46,15 @@ Resources:
         VpcCidr: !FindInMap [GlobalParams, Vpc, VpcCidr]
 
 
-#  WorkflowIAMRolesTemplate:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL:
-#        !Sub ${CFTemplateS3Path}/step_020_02_iam_roles.yaml
-#      Parameters:
-#        WFName: !Ref WFName
-#        CFTemplateS3Path: !Ref CFTemplateS3Path
-#        Environment: dev
+  WorkflowIAMRolesTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_020_02_iam_roles.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev
 
   ECRReposTemplate:
     Type: AWS::CloudFormation::Stack
@@ -97,7 +97,7 @@ Resources:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
         Environment: dev
-#        DataloaderIamInstanceProfile: ""
+        DataloaderIamInstanceProfile: !GetAtt WorkflowIAMRolesTemplate.Outputs.DataloaderInstanceProfile
         DataLoaderEC2SecurityGroup: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.DataLoaderEC2SecurityGroup
         DataloaderSubnet: !FindInMap [GlobalParams, Deployment, DataloaderEC2Subnet]
         VpcId: !FindInMap [GlobalParams, Vpc, VpcId]

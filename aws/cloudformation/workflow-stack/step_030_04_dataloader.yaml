@@ -16,8 +16,8 @@ Parameters:
   CFTemplateS3Path:
     Type: String
 
-#  DataloaderIamInstanceProfile:
-#    Type: String
+  DataloaderIamInstanceProfile:
+    Type: String
 
   DataLoaderEC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
@@ -66,7 +66,7 @@ Resources:
   DataloaderEC2Instance:
     Type: "AWS::EC2::Instance"
     Properties:
-#      IamInstanceProfile: !Ref DataloaderIamInstanceProfile
+      IamInstanceProfile: !Ref DataloaderIamInstanceProfile
       ImageId: !FindInMap
         - AMI
         - !Ref AWS::Region
