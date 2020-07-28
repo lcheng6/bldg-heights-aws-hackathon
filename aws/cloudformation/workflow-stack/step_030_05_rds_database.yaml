@@ -51,7 +51,7 @@ Resources:
       AllocatedStorage: '50'
       DeletionProtection: false
       DBInstanceClass: db.t3.large
-#      DBName: !Sub "rds-${WFName}-${Environment}-publicpostgres"
+      DBInstanceIdentifier: !Sub "rds-${WFName}-${Environment}-publicpostgres"
       EnableCloudwatchLogsExports: ["postgresql","upgrade"]
       EnablePerformanceInsights: true
       Engine: postgres
@@ -64,6 +64,7 @@ Resources:
       MultiAZ: false
       PubliclyAccessible: true
       StorageEncrypted: true
+      StorageType: gp2
       VPCSecurityGroups:
         - !Ref RDSPostgresSecurityGroup
 
