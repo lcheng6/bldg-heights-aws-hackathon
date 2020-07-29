@@ -2,12 +2,12 @@
 
 #prep the dockermound directory with PGP public keys and other directories
 
-dockerimage=lastosqltransform
+dockerimage=repo-urbaninst-dev-lidarprocessing
 docker stop $(docker ps -a -q)
 docker build --tag $dockerimage .
 
 #extract some environment variables from my own profile to help with docker run
-AWS_PROFILE=liangchengkl2_kl2tech
+AWS_PROFILE=urban-institute-workloadcft
 
 aws_access_key_id=`aws configure get aws_access_key_id`
 aws_secret_access_key=`aws configure get aws_secret_access_key`

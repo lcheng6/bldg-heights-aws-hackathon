@@ -23,6 +23,17 @@ Mappings:
 
 Resources:
 
+  NoRightsRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+
   DataS3BucketReadWriteRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -96,10 +107,78 @@ Resources:
             - SourceVolume: data_volume
               ContainerPath: /tmp
           Name: !Sub ${WFName}-${Environment}-lidarprocessing
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/repo-urbaninst-dev-lidarprocessing:latest
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/repo-${WFName}-${Environment}-lidarprocessing:latest
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-region: !Ref 'AWS::Region'
               awslogs-group: !Ref LidarProcessingLogGroup
               awslogs-stream-prefix: ecs
+
+
+  PgAdminLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      RetentionInDays: 3
+
+  PgAdminTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      NetworkMode: awsvpc
+      Family: !Sub ${WFName}-${Environment}-pgadmin
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 512
+      Memory: 1024
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt NoRightsRole.Arn
+      ContainerDefinitions:
+        -
+          Essential: true
+          Environment:
+            -
+              Name: PGADMIN_DEFAULT_EMAIL
+              Value: user@domain.com
+            -
+              Name: PGADMIN_DEFAULT_PASSWORD
+              Value: SuperSecret #TODO: change this
+          Name: pgadmin
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/repo-${WFName}-${Environment}-pgadmin:latest
+          PortMappings:
+            -
+              HostPort: 80
+              ContainerPort: 80
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-group: !Ref PgAdminLogGroup
+              awslogs-stream-prefix: ecs
+
+
+#  PgAdmineService:
+#    Type: 'AWS::ECS::Service'
+#    Properties:
+#      NetworkConfiguration:
+#        AwsvpcConfiguration:
+#          Subnets: !Ref PrivateSubnets
+#          SecurityGroups:
+#            - !Ref PgAdminServiceSG
+#      HealthCheckGracePeriodSeconds: !Ref PgAdminContainerGrace
+#      LaunchType: FARGATE
+#      Tags:
+#        - Value: !Sub ${Environment}-alfresco-share
+#          Key: ServiceName
+#        - Value: !Ref 'AWS::StackName'
+#          Key: Stack
+#      LoadBalancers:
+#        - ContainerName: !Sub ${Environment}-ses-share
+#          TargetGroupArn: !Ref PgAdminTargetGroupArn
+#          ContainerPort: 8080
+#      DesiredCount: 1
+#      Cluster: !Ref FargateECSClusterName
+#      DeploymentConfiguration:
+#        MaximumPercent: 200
+#        MinimumHealthyPercent: 100
+#      TaskDefinition: !Ref PgAdminTaskDefinition

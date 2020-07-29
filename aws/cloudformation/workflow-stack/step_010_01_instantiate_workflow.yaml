@@ -125,19 +125,16 @@ Resources:
         RDSPostgresEnhancedMonitoringRoleArn: !GetAtt WorkflowIAMRolesTemplate.Outputs.RDSPostgresEnhancedMonitoringRoleArn
 
 
-  ElasticLoadBalancersTemplate:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL:
-        !Sub ${CFTemplateS3Path}/step_030_08_albs_for_pgadmin.yaml
-      Parameters:
-        WFName: !Ref WFName
-        CFTemplateS3Path: !Ref CFTemplateS3Path
-        Environment: dev
+#  ElasticLoadBalancersTemplate:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_030_08_albs_for_pgadmin.yaml
+#      Parameters:
+#        WFName: !Ref WFName
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        Environment: dev
 
-        RDSPostgresSubnets: !FindInMap [GlobalParams, Deployment, RDSPostgresSubnets]
-        RDSPostgresSecurityGroup: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.RDSDatabaseSecurityGroup
-        RDSPostgresEnhancedMonitoringRoleArn: !GetAtt WorkflowIAMRolesTemplate.Outputs.RDSPostgresEnhancedMonitoringRoleArn
 #  RedshiftTemplate:
 #    Type: AWS::CloudFormation::Stack
 #    Properties:
