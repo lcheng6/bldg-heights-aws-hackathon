@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Urban Insitute Workflow RDS Database (Aurora, or RDS Postgres)
+  Currently just instantiating Serverless Aurora Postgres DB for cost saving etc
+
+Parameters:
+  WFName:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+
+  PublicSubnets:
+    Type: CommaDelimitedList
+
+  PrivateSubnets:
+    Type: CommaDelimitedList
+
+  ExternalLoadBalancerSG:
+    Type: AWS::EC2::SecurityGroup::Id
+
+  SSLCert:
+    Type: String
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+
+Resources:
+  ExternalLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Subnets: !Ref PublicSubnets
+      Tags:
+        - Value: !Sub ${Environment}-alfresco-ses-public
+          Key: Name
+        - Value: !Ref 'AWS::StackName'
+          Key: Stack
+      Scheme: External
+      SecurityGroups:
+        - !Ref ExternalLoadBalancerSG
+#      LoadBalancerAttributes:
+#        - Value: 'true'
+#          Key: access_logs.s3.enabled
+#        - Value: csbs-aws-logs
+#          Key: access_logs.s3.bucket
+#        - Value: !Ref EnvironmentALBbucketPrefix
+#          Key: access_logs.s3.prefix
+
+  ExternalLoadBalancerListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      Certificates:
+        - CertificateArn: !Ref SSLCert
+      Protocol: HTTPS
+      DefaultActions:
+        - TargetGroupArn: !Ref ExternalPgAdminTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ExternalLoadBalancer
+      Port: 443
+
+  ExternalPgAdminTargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      TargetType: ip
+      HealthCheckIntervalSeconds: 10
+      VpcId: !Ref VpcId
+      Protocol: HTTP
+      Tags:
+        - Value: !Sub tg-${WFName}-${Environment}-pgadmin
+          Key: TargetGroupName
+        - Value: !Ref 'AWS::StackName'
+          Key: Stack
+      Matcher:
+        HttpCode: '302'
+      UnhealthyThresholdCount: 2
+      HealthCheckPath: /
+      HealthCheckTimeoutSeconds: 5
+      TargetGroupAttributes:
+        - Value: '20'
+          Key: deregistration_delay.timeout_seconds
+        - Value: 'true'
+          Key: stickiness.enabled
+        - Value: lb_cookie
+          Key: stickiness.type
+        - Value: '86400'
+          Key: stickiness.lb_cookie.duration_seconds
+      HealthCheckProtocol: HTTP
+      HealthyThresholdCount: 2
+      Port: 80
+
+Outputs:
+  ExternalLoadBalancerCanonicalHostedZoneID:
+    Value: !GetAtt ExternalLoadBalancer.CanonicalHostedZoneID
+
+  ExternalLoadBalancerDNSName:
+    Value: !GetAtt ExternalLoadBalancer.DNSName
+
+  ExternalLoadBalancerArn:
+    Value: !Ref ExternalLoadBalancer
+
+  ExternalLoadBalancerFullName:
+    Value: !GetAtt ExternalLoadBalancer.LoadBalancerFullName
+
+  ExternalPgAdminTargetGroupFullName:
+    Value: !GetAtt ExternalPgAdminTargetGroup.TargetGroupFullName

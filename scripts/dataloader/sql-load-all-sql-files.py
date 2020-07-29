@@ -53,7 +53,7 @@ def mainfunction():
         sqlfilename = f"{keysequencenum}.sql"
         print("downloading file: ", sqlfilename)
         download_sql_file_from_s3(sqlfilename)
-        split_and_merge_sql_file(sqlfilename)
+        # split_and_merge_sql_file(sqlfilename)
         execute_downloaded_sql_file(sqlfilename)
         remove_downloaded_sql_file(sqlfilename)
 

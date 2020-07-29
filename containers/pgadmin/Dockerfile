@@ -1,0 +1,2 @@
+FROM dpage/pgadmin4
+MAINTAINER liangcheng
