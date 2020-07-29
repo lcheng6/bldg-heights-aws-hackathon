@@ -72,13 +72,24 @@ Resources:
         CFTemplateS3Path: !Ref CFTemplateS3Path
         Environment: dev
 
+  # ALB with pgadmin service
+  #  ElasticLoadBalancersTemplate:
+  #    Type: AWS::CloudFormation::Stack
+  #    Properties:
+  #      TemplateURL:
+  #        !Sub ${CFTemplateS3Path}/step_030_02_albs_for_pgadmin.yaml
+  #      Parameters:
+  #        WFName: !Ref WFName
+  #        CFTemplateS3Path: !Ref CFTemplateS3Path
+  #        Environment: dev
+
   #create the ECR Fargate cluster to run any thing significant
   #at the present time, we will only create a fargate cluster to run any data processing job
   ECRClusterResourcesTemplate:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        !Sub ${CFTemplateS3Path}/step_030_02_ecr_clusters.yaml
+        !Sub ${CFTemplateS3Path}/step_030_03_ecr_clusters.yaml
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
@@ -88,25 +99,11 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        !Sub ${CFTemplateS3Path}/step_030_03_ecr_tasks_and_services.yaml
+        !Sub ${CFTemplateS3Path}/step_030_04_ecr_tasks_and_services.yaml
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
         Environment: dev
-
-  DataloaderEC2Template:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL:
-        !Sub ${CFTemplateS3Path}/step_030_04_dataloader.yaml
-      Parameters:
-        WFName: !Ref WFName
-        CFTemplateS3Path: !Ref CFTemplateS3Path
-        Environment: dev
-        DataloaderIamInstanceProfile: !GetAtt WorkflowIAMRolesTemplate.Outputs.DataloaderInstanceProfile
-        DataLoaderEC2SecurityGroup: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.DataLoaderEC2SecurityGroup
-        DataloaderSubnet: !FindInMap [GlobalParams, Deployment, DataloaderEC2Subnet]
-        VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
 
   RDSDatabaseTemplate:
     Type: AWS::CloudFormation::Stack
@@ -124,22 +121,26 @@ Resources:
         RDSPostgresSecurityGroup: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.RDSDatabaseSecurityGroup
         RDSPostgresEnhancedMonitoringRoleArn: !GetAtt WorkflowIAMRolesTemplate.Outputs.RDSPostgresEnhancedMonitoringRoleArn
 
+  DataloaderEC2Template:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_030_06_dataloader.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev
+        DataloaderIamInstanceProfile: !GetAtt WorkflowIAMRolesTemplate.Outputs.DataloaderInstanceProfile
+        DataLoaderEC2SecurityGroup: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.DataLoaderEC2SecurityGroup
+        DataloaderSubnet: !FindInMap [GlobalParams, Deployment, DataloaderEC2Subnet]
+        VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
 
-#  ElasticLoadBalancersTemplate:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL:
-#        !Sub ${CFTemplateS3Path}/step_030_08_albs_for_pgadmin.yaml
-#      Parameters:
-#        WFName: !Ref WFName
-#        CFTemplateS3Path: !Ref CFTemplateS3Path
-#        Environment: dev
 
 #  RedshiftTemplate:
 #    Type: AWS::CloudFormation::Stack
 #    Properties:
 #      TemplateURL:
-#        !Sub ${CFTemplateS3Path}/step_030_06_redshift_deployment.yaml
+#        !Sub ${CFTemplateS3Path}/step_030_07_redshift_deployment.yaml
 #      Parameters:
 #        WFName: !Ref WFName
 #        CFTemplateS3Path: !Ref CFTemplateS3Path
