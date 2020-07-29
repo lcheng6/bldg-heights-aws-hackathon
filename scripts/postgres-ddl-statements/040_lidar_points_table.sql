@@ -1,5 +1,5 @@
 drop table if exists lidar_values;
-create table lidar_values
+create table "lidarbuilding".public.lidar_values
 (
     id serial primary key,
     ground_coord geometry,

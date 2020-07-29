@@ -51,12 +51,12 @@ Resources:
       AllocatedStorage: '50'
       DeletionProtection: false
       DBInstanceClass: db.t3.large
-      DBInstanceIdentifier: !Sub "rds-${WFName}-${Environment}-publicpostgres"
+      DBInstanceIdentifier: !Sub "rds-${WFName}-${Environment}-publicgispostgres"
       EnableCloudwatchLogsExports: ["postgresql","upgrade"]
       EnablePerformanceInsights: true
       Engine: postgres
       EngineVersion: 11.8
-      MasterUsername: !Ref RDSDBName
+      MasterUsername: !Ref RDSDBUsername
       MasterUserPassword: !Ref RDSDBPassword
       MaxAllocatedStorage: 1024
       MonitoringRoleArn: !Ref RDSPostgresEnhancedMonitoringRoleArn

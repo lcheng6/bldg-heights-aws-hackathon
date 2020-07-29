@@ -1,7 +1,7 @@
-drop table if exists "liang-gis-test".public.buildinginfotraining;
-drop table if exists "liang-gis-test".public.buildinginfotest;
+drop table if exists "lidarbuilding".public.buildinginfotraining;
+drop table if exists "lidarbuilding".public.buildinginfotest;
 
-create table buildinginfotraining (
+create table "lidarbuilding".public.buildinginfotraining (
     EGID VARCHAR (12) primary key,
     Shape_Area float Default null,
     RoofType TEXT Default null,
@@ -10,7 +10,7 @@ create table buildinginfotraining (
     Estimated_Height float Default null
 );
 
-create table "liang-gis-test".public.buildinginfotest (
+create table "lidarbuilding".public.buildinginfotest (
     EGID VARCHAR (12) primary key,
     Shape_Area float Default null,
     Altitude_M float Default null,
