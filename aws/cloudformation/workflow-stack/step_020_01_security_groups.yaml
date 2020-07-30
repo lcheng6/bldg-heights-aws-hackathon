@@ -55,12 +55,28 @@ Resources:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupName: !Sub "sg.${WFName}.${Environment}.rdspostgres.${AWS::Region}"
-      GroupDescription: Urban Institute Data Loader HTTP Service Security Group
+      GroupDescription: Urban Institute Data Loader HTTP Service Security Group #todo change this
       SecurityGroupIngress:
         - ToPort: 5432
           IpProtocol: tcp
           CidrIp: !Ref VpcCidr
           FromPort: 5432
+      VpcId: !Ref VpcId
+
+  PgAdminServiceSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "sg.${WFName}.${Environment}.pgadminservice.${AWS::Region}"
+      GroupDescription: Urban Institute PgAdmin Service Security Group
+      SecurityGroupIngress:
+        - ToPort: 443
+          IpProtocol: tcp
+          CidrIp: !Ref VpcCidr
+          FromPort: 443
+        - ToPort: 80
+          IpProtocol: tcp
+          CidrIp: !Ref VpcCidr
+          FromPort: 80
       VpcId: !Ref VpcId
 
 
@@ -84,3 +100,8 @@ Outputs:
     Value: !GetAtt RDSPostgresSecurityGroup.GroupId
     Export:
       Name: !Sub "sg-${WFName}-${Environment}-rdspostgres-${AWS::Region}"
+
+  PgAdminServiceSecurityGroup:
+    Value: !GetAtt PgAdminServiceSecurityGroup.GroupId
+    Export:
+      Name: !Sub "sg-${WFName}-${Environment}-pgadminservice-${AWS::Region}"

@@ -25,8 +25,9 @@ Parameters:
   ExternalLoadBalancerSG:
     Type: AWS::EC2::SecurityGroup::Id
 
-  SSLCert:
+  SSLCertArn:
     Type: String
+    Default: arn:aws:acm:us-east-1:124836406894:certificate/1ac4d2ac-a961-48d4-b392-a0813939483c #the *urban-institue.kl2tech.com cert
 
   VpcId:
     Type: AWS::EC2::VPC::Id
@@ -52,47 +53,47 @@ Resources:
 #        - Value: !Ref EnvironmentALBbucketPrefix
 #          Key: access_logs.s3.prefix
 
-  ExternalLoadBalancerListener:
-    Type: 'AWS::ElasticLoadBalancingV2::Listener'
-    Properties:
-      Certificates:
-        - CertificateArn: !Ref SSLCert
-      Protocol: HTTPS
-      DefaultActions:
-        - TargetGroupArn: !Ref ExternalPgAdminTargetGroup
-          Type: forward
-      LoadBalancerArn: !Ref ExternalLoadBalancer
-      Port: 443
-
-  ExternalPgAdminTargetGroup:
-    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
-    Properties:
-      TargetType: ip
-      HealthCheckIntervalSeconds: 10
-      VpcId: !Ref VpcId
-      Protocol: HTTP
-      Tags:
-        - Value: !Sub tg-${WFName}-${Environment}-pgadmin
-          Key: TargetGroupName
-        - Value: !Ref 'AWS::StackName'
-          Key: Stack
-      Matcher:
-        HttpCode: '302'
-      UnhealthyThresholdCount: 2
-      HealthCheckPath: /
-      HealthCheckTimeoutSeconds: 5
-      TargetGroupAttributes:
-        - Value: '20'
-          Key: deregistration_delay.timeout_seconds
-        - Value: 'true'
-          Key: stickiness.enabled
-        - Value: lb_cookie
-          Key: stickiness.type
-        - Value: '86400'
-          Key: stickiness.lb_cookie.duration_seconds
-      HealthCheckProtocol: HTTP
-      HealthyThresholdCount: 2
-      Port: 80
+#  ExternalLoadBalancerListener:
+#    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+#    Properties:
+#      Certificates:
+#        - CertificateArn: !Ref SSLCert
+#      Protocol: HTTPS
+#      DefaultActions:
+#        - TargetGroupArn: !Ref ExternalPgAdminTargetGroup
+#          Type: forward
+#      LoadBalancerArn: !Ref ExternalLoadBalancer
+#      Port: 443
+#
+#  ExternalPgAdminTargetGroup:
+#    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+#    Properties:
+#      TargetType: ip
+#      HealthCheckIntervalSeconds: 10
+#      VpcId: !Ref VpcId
+#      Protocol: HTTP
+#      Tags:
+#        - Value: !Sub tg-${WFName}-${Environment}-pgadmin
+#          Key: TargetGroupName
+#        - Value: !Ref 'AWS::StackName'
+#          Key: Stack
+#      Matcher:
+#        HttpCode: '302'
+#      UnhealthyThresholdCount: 2
+#      HealthCheckPath: /
+#      HealthCheckTimeoutSeconds: 5
+#      TargetGroupAttributes:
+#        - Value: '20'
+#          Key: deregistration_delay.timeout_seconds
+#        - Value: 'true'
+#          Key: stickiness.enabled
+#        - Value: lb_cookie
+#          Key: stickiness.type
+#        - Value: '86400'
+#          Key: stickiness.lb_cookie.duration_seconds
+#      HealthCheckProtocol: HTTP
+#      HealthyThresholdCount: 2
+#      Port: 80
 
 Outputs:
   ExternalLoadBalancerCanonicalHostedZoneID:
@@ -106,6 +107,6 @@ Outputs:
 
   ExternalLoadBalancerFullName:
     Value: !GetAtt ExternalLoadBalancer.LoadBalancerFullName
-
-  ExternalPgAdminTargetGroupFullName:
-    Value: !GetAtt ExternalPgAdminTargetGroup.TargetGroupFullName
+#
+#  ExternalPgAdminTargetGroupFullName:
+#    Value: !GetAtt ExternalPgAdminTargetGroup.TargetGroupFullName

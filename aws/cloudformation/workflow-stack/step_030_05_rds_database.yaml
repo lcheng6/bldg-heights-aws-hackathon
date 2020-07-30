@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: 2010-09-09
 
 Description: >-
   Urban Insitute Workflow RDS Database (Aurora, or RDS Postgres)
-  Currently just instantiating Serverless Aurora Postgres DB for cost saving etc
+  Currently just instantiating Serverless RDS Postgres DB, as there is really no other choice
 
 Parameters:
   WFName:
@@ -68,6 +68,15 @@ Resources:
       VPCSecurityGroups:
         - !Ref RDSPostgresSecurityGroup
 
+#  RDSPostgresRecordSet:
+#    Type: AWS::Route53::RecordSet
+#    Properties:
+#      HostedZoneId: Z8VLZEXAMPLE
+#      Name: rdspostgrespublicaccess.urban-institute.kl2tech.com
+#      ResourceRecords:
+#        - !GetAtt RDSPostgresPublicAccess.Endpoint.Address
+#      TTL: '600'
+#      Type: CNAME
 
 #  can't use aurora serverless with postgres
 #  can only use the RDS postgres
@@ -94,4 +103,9 @@ Resources:
 #      VpcSecurityGroupIds:
 #        - !Ref RDSPostgresSecurityGroup
 
-#Outputs:
+Outputs:
+  RDSPostgresPublicAccessEndpointAddress:
+    Value: !GetAtt RDSPostgresPublicAccess.Endpoint.Address
+
+  RDSPostgresPublicAccessEndpointPort:
+    Value: !GetAtt RDSPostgresPublicAccess.Endpoint.Port
