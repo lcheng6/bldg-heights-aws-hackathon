@@ -1,5 +1,7 @@
 -- Update all statistics on all existing tables
-vacuum analyze;
+vacuum (verbose, analyze) buildinginfotest;
+vacuum (verbose, analyze) buildinginfotraining;
+vacuum (verbose, analyze) lidar_values;
 
 -- Select the data points from buildinginfotest
 create table lidarbuildingmatchtest as
