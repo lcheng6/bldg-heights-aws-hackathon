@@ -2,7 +2,8 @@ drop table if exists "lidarbuilding".public.buildinginfotraining;
 drop table if exists "lidarbuilding".public.buildinginfotest;
 
 create table "lidarbuilding".public.buildinginfotraining (
-    EGID VARCHAR (12) primary key,
+    id serial primary key,
+    EGID VARCHAR (12) not null,
     Shape_Area float Default null,
     RoofType TEXT Default null,
     Shape_Length float Default null,
@@ -11,7 +12,8 @@ create table "lidarbuilding".public.buildinginfotraining (
 );
 
 create table "lidarbuilding".public.buildinginfotest (
-    EGID VARCHAR (12) primary key,
+    id serial primary key,
+    EGID VARCHAR (12) not null,
     Shape_Area float Default null,
     Altitude_M float Default null,
     RoofType TEXT Default null,
