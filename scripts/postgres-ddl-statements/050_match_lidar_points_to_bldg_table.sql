@@ -1,5 +1,6 @@
 -- Update all statistics on all existing tables
-vacuum analyze
+vacuum analyze;
+
 -- Select the data points from buildinginfotest
 create table lidarbuildingmatchtest as
     select bldg.egid as bldg_egid, las.id as las_id
