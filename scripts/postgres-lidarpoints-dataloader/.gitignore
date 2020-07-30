@@ -1,0 +1,4 @@
+__pycache__
+databaseparams.json
+splitsql
+*.out

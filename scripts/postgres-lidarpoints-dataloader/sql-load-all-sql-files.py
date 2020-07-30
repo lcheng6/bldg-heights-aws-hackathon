@@ -30,7 +30,7 @@ def execute_downloaded_sql_file(sqlfilename):
     return output
 
 def download_sql_file_from_s3(sqlfilekeyname):
-    return download_file_from_s3_bucket(sqlfilekeyname, "additional-test-datasets", "bldg-height/las-sql-statements")
+    return download_file_from_s3_bucket(sqlfilekeyname, "urban-institute-datasets", "bldg-height/las-sql-statements-v2-1")
 
 def download_file_from_s3_bucket(keyname, s3bucket, s3prefix):
     s3 = boto3.resource('s3')
@@ -53,7 +53,7 @@ def mainfunction():
         sqlfilename = f"{keysequencenum}.sql"
         print("downloading file: ", sqlfilename)
         download_sql_file_from_s3(sqlfilename)
-        split_and_merge_sql_file(sqlfilename)
+        # split_and_merge_sql_file(sqlfilename)
         execute_downloaded_sql_file(sqlfilename)
         remove_downloaded_sql_file(sqlfilename)
 

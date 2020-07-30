@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Urban Insitute Workflow RDS Database (Aurora, or RDS Postgres)
+  Currently just instantiating Serverless Aurora Postgres DB for cost saving etc
+
+Parameters:
+  WFName:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+
+  #  MasterUsername:
+  #    Type: String
+  #
+  #  MasterUserPassword:
+  #    Type: String
+
+  SubnetsForRedshiftSubnetGroup:
+    Type: CommaDelimitedList
+
+  DatabaseName:
+    Description: The name of the first database to be created when the cluster is
+      created
+    Type: String
+    Default: dev
+    AllowedPattern: "([a-z]|[0-9])+"
+
+  NumberOfNodes:
+    Description: The number of compute nodes in the cluster. For multi-node clusters,
+      the NumberOfNodes parameter must be greater than 1
+    Type: Number
+    Default: '1'
+
+  NodeType:
+    Description: The type of node to be provisioned
+    Type: String
+    Default: ds2.xlarge
+    AllowedValues:
+      - ra3.4xlarge
+      - ra3.16xlarge
+      - dc2.large
+      - dc2.8xlarge
+
+  ClusterType:
+    Description: The type of cluster
+    Type: String
+    Default: single-node
+    AllowedValues:
+      - single-node
+      - multi-node
+
+  PubliclyAccessible:
+    Type: String
+    Default: 'true'
+
+  PortNumber:
+    Description: The port number on which the cluster accepts incoming connections.
+    Type: Number
+    Default: '5439'
+
+Conditions:
+  IsMultiNodeCluster:
+    Fn::Equals:
+      - Ref: ClusterType
+      - multi-node
+
+Resources:
+#  RedshiftCluster:
+#    Type: AWS::Redshift::Cluster
+#    Properties:
+#      ClusterType:
+#        Ref: ClusterType
+#      NumberOfNodes:
+#        Fn::If:
+#          - IsMultiNodeCluster
+#          - Ref: NumberOfNodes
+#          - Ref: AWS::NoValue
+#      NodeType:
+#        Ref: NodeType
+#      DBName:
+#        Ref: DatabaseName
+#      MasterUsername:
+#        Ref: MasterUsername
+#      MasterUserPassword:
+#        Ref: MasterUserPassword
+#      ClusterParameterGroupName:
+#        Ref: RedshiftClusterParameterGroup
+#      VpcSecurityGroupIds:
+#        - Ref: SecurityGroup
+#      ClusterSubnetGroupName:
+#        Ref: RedshiftClusterSubnetGroup
+#      PubliclyAccessible: !Ref PubliclyAccessible
+#      Port:
+#        Ref: PortNumber
+
+  RedshiftClusterSubnetGroup:
+    Type: AWS::Redshift::ClusterSubnetGroup
+    Properties:
+      Description: Cluster subnet group
+      SubnetIds: !Ref SubnetsForRedshiftSubnetGroup

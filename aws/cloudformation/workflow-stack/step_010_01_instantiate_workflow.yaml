@@ -27,6 +27,15 @@ Mappings:
       VpcCidr: "10.0.0.0/20"
       PrivateSubnets: "subnet-0f2296d1facaad0d1,subnet-076aed91c3669be38,subnet-04b284cd9799f101b"
       PublicSubnets: "subnet-07d1e64a658e5d40c,subnet-0ecb2878f52b8d153,subnet-00f970f7a1365d359"
+    Deployment:
+      DataloaderEC2Subnet: "subnet-07d1e64a658e5d40c"
+      SubnetsForAuroraServerlessRDSSubnetGroup: "subnet-0f2296d1facaad0d1,subnet-076aed91c3669be38,subnet-04b284cd9799f101b"
+      #although Aurora Serverless can be deployed in public subnet, it can't have a public IP address see
+      #https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations
+      #so if public access is required, it is necessary to provide a proxy
+      SubnetsForRedshiftSubnetGroup: "subnet-07d1e64a658e5d40c,subnet-0ecb2878f52b8d153,subnet-00f970f7a1365d359" #the public subnets
+      RDSPostgresSubnets: "subnet-07d1e64a658e5d40c,subnet-0ecb2878f52b8d153,subnet-00f970f7a1365d359" #the public subnets
+
 
 Resources:
 
@@ -43,15 +52,15 @@ Resources:
         VpcCidr: !FindInMap [GlobalParams, Vpc, VpcCidr]
 
 
-#  WorkflowIAMRolesTemplate:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL:
-#        !Sub ${CFTemplateS3Path}/step_020_02_iam_roles.yaml
-#      Parameters:
-#        WFName: !Ref WFName
-#        CFTemplateS3Path: !Ref CFTemplateS3Path
-#        Environment: dev
+  WorkflowIAMRolesTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_020_02_iam_roles.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev
 
   ECRReposTemplate:
     Type: AWS::CloudFormation::Stack
@@ -63,13 +72,24 @@ Resources:
         CFTemplateS3Path: !Ref CFTemplateS3Path
         Environment: dev
 
+  # ALB with pgadmin service
+  #  ElasticLoadBalancersTemplate:
+  #    Type: AWS::CloudFormation::Stack
+  #    Properties:
+  #      TemplateURL:
+  #        !Sub ${CFTemplateS3Path}/step_030_02_albs_for_pgadmin.yaml
+  #      Parameters:
+  #        WFName: !Ref WFName
+  #        CFTemplateS3Path: !Ref CFTemplateS3Path
+  #        Environment: dev
+
   #create the ECR Fargate cluster to run any thing significant
   #at the present time, we will only create a fargate cluster to run any data processing job
   ECRClusterResourcesTemplate:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        !Sub ${CFTemplateS3Path}/step_030_02_ecr_clusters.yaml
+        !Sub ${CFTemplateS3Path}/step_030_03_ecr_clusters.yaml
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
@@ -79,8 +99,50 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        !Sub ${CFTemplateS3Path}/step_030_03_ecr_tasks_and_services.yaml
+        !Sub ${CFTemplateS3Path}/step_030_04_ecr_tasks_and_services.yaml
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
         Environment: dev
+
+  RDSDatabaseTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_030_05_rds_database.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev
+        RDSDBName: "{{resolve:secretsmanager:UrbanInstituteDevRDSParameter:SecretString:POSTGRES_DBNAME}}"
+        RDSDBUsername: "{{resolve:secretsmanager:UrbanInstituteDevRDSParameter:SecretString:POSTGRES_USERNAME}}"
+        RDSDBPassword: "{{resolve:secretsmanager:UrbanInstituteDevRDSParameter:SecretString:POSTGRES_PASSWORD}}"
+        RDSPostgresSubnets: !FindInMap [GlobalParams, Deployment, RDSPostgresSubnets]
+        RDSPostgresSecurityGroup: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.RDSDatabaseSecurityGroup
+        RDSPostgresEnhancedMonitoringRoleArn: !GetAtt WorkflowIAMRolesTemplate.Outputs.RDSPostgresEnhancedMonitoringRoleArn
+
+  DataloaderEC2Template:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_030_06_dataloader.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: dev
+        DataloaderIamInstanceProfile: !GetAtt WorkflowIAMRolesTemplate.Outputs.DataloaderInstanceProfile
+        DataLoaderEC2SecurityGroup: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.DataLoaderEC2SecurityGroup
+        DataloaderSubnet: !FindInMap [GlobalParams, Deployment, DataloaderEC2Subnet]
+        VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
+
+
+#  RedshiftTemplate:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_030_07_redshift_deployment.yaml
+#      Parameters:
+#        WFName: !Ref WFName
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        Environment: dev
+#        SubnetsForDBSubnetGroups: !FindInMap [GlobalParams, Deployment, SubnetsForRDSSubnetGroup]

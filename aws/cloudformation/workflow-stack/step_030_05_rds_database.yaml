@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Urban Insitute Workflow RDS Database (Aurora, or RDS Postgres)
+  Currently just instantiating Serverless RDS Postgres DB, as there is really no other choice
+
+Parameters:
+  WFName:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+
+  RDSDBName:
+    Type: String
+
+  RDSDBUsername:
+    Type: String
+
+  RDSDBPassword:
+    Type: String
+    NoEcho: true
+
+  RDSPostgresSubnets:
+    Type: CommaDelimitedList
+
+  RDSPostgresSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+
+  RDSPostgresEnhancedMonitoringRoleArn:
+    Type: String
+
+Resources:
+
+  RDSPostgresDBSubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupDescription: description
+      SubnetIds: !Ref RDSPostgresSubnets
+
+  RDSPostgresPublicAccess:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Properties:
+      DBSubnetGroupName: !Ref RDSPostgresDBSubnetGroup
+      AllocatedStorage: '50'
+      DeletionProtection: false
+      DBInstanceClass: db.t3.large
+      DBInstanceIdentifier: !Sub "rds-${WFName}-${Environment}-publicgispostgres"
+      EnableCloudwatchLogsExports: ["postgresql","upgrade"]
+      EnablePerformanceInsights: true
+      Engine: postgres
+      EngineVersion: 11.8
+      MasterUsername: !Ref RDSDBUsername
+      MasterUserPassword: !Ref RDSDBPassword
+      MaxAllocatedStorage: 1024
+      MonitoringRoleArn: !Ref RDSPostgresEnhancedMonitoringRoleArn
+      MonitoringInterval: 15
+      MultiAZ: false
+      PubliclyAccessible: true
+      StorageEncrypted: true
+      StorageType: gp2
+      VPCSecurityGroups:
+        - !Ref RDSPostgresSecurityGroup
+
+#  RDSPostgresRecordSet:
+#    Type: AWS::Route53::RecordSet
+#    Properties:
+#      HostedZoneId: Z8VLZEXAMPLE
+#      Name: rdspostgrespublicaccess.urban-institute.kl2tech.com
+#      ResourceRecords:
+#        - !GetAtt RDSPostgresPublicAccess.Endpoint.Address
+#      TTL: '600'
+#      Type: CNAME
+
+#  can't use aurora serverless with postgres
+#  can only use the RDS postgres
+#  RDSCluster:
+#    Type: AWS::RDS::DBCluster
+#    Properties:
+#      MasterUsername:
+#        Ref: RDSDBUsername
+#      MasterUserPassword:
+#        Ref: RDSDBPassword
+#      DatabaseName: RDSDBName
+#      Engine: aurora-postgresql
+#      EngineVersion: 11.5
+#      EngineMode: serverless
+#      ScalingConfiguration:
+#        AutoPause: true
+#        MaxCapacity: 16
+#        MinCapacity: 1
+#        SecondsUntilAutoPause: 300
+#      DBSubnetGroupName:
+#        Ref: DBSubnetGroup
+#      Port: 5432
+##      StorageEncrypted: true
+#      VpcSecurityGroupIds:
+#        - !Ref RDSPostgresSecurityGroup
+
+Outputs:
+  RDSPostgresPublicAccessEndpointAddress:
+    Value: !GetAtt RDSPostgresPublicAccess.Endpoint.Address
+
+  RDSPostgresPublicAccessEndpointPort:
+    Value: !GetAtt RDSPostgresPublicAccess.Endpoint.Port
