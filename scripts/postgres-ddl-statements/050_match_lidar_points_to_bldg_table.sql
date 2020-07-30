@@ -13,3 +13,5 @@ create table lidarbuildingmatchtraining as
     select bldg.egid as bldg_egid, las.id as las_id
     from buildinginfotraining bldg, lidar_values las
     where st_within(las.ground_coord, bldg.border);
+
+vacuum full;
