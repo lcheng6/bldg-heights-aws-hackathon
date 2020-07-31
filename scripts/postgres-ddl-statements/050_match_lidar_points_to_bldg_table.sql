@@ -16,4 +16,7 @@ create table lidarbuildingmatchtraining as
     from buildinginfotraining bldg, lidar_values las
     where st_within(las.ground_coord, bldg.border);
 
+CREATE INDEX if not exists idx_lidarbuildingmatchtest_egid ON lidarbuildingmatchtest USING bldg_egid;
+CREATE INDEX if not exists idx_lidarbuildingmatchtraining_egid ON lidarbuildingmatchtraining USING bldg_egid;
+
 vacuum full;
