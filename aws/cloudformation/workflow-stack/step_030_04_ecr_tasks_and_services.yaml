@@ -1,7 +1,9 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Description: >-
-  ECR Repos, currently containing data processing repos
+  ECR Tasks for processing data.
+  Currently we are using a large number of fargate tasks to process data, i.e. the mapping operation
+  of map-reduce
 
 Parameters:
   WFName:
