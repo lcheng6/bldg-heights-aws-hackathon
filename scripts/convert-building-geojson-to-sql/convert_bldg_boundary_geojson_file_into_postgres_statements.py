@@ -93,4 +93,3 @@ with open('../data/DC_buildings_Footprint_4326_test.geojson') as json_file:
 
         sql_example = form_test_insert_statement(processed_feature_example, "buildinginfotest")
         test_sql_output.write(sql_example)
-No newline at end of file
