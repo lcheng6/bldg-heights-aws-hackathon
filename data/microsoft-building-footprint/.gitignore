@@ -1,0 +1,4 @@
+#make sure non of the actual Microsoft Building data from https://github.com/Microsoft/USBuildingFootprints
+#gets put into my repo
+*.geojson
+*.zip
