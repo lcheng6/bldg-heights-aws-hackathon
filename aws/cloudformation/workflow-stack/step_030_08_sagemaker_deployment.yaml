@@ -57,61 +57,61 @@ Parameters:
 Resources:
 
 
-  BldgHeightNbLifecycleConfig:
-    Type: "AWS::SageMaker::NotebookInstanceLifecycleConfig"
-    Properties:
-      OnCreate:
-        - Content:
-            Fn::Base64: |
-              #!/bin/bash
-              sudo -H -i -u ec2-user bash << EOF
-              # create symlinks to EBS volume
-              echo "Creating symlinks"
-              mkdir /home/ec2-user/SageMaker/.torch && ln -s /home/ec2-user/SageMaker/.torch /home/ec2-user/.torch
-              mkdir /home/ec2-user/SageMaker/.fastai && ln -s /home/ec2-user/SageMaker/.fastai /home/ec2-user/.fastai
-
-              # clone the course notebooks
-              echo "Clone the course repo"
-              git clone https://github.com/lcheng6/bldg-heights-aws-hackathon.git /home/ec2-user/SageMaker/bldg-heights-aws-hackathon
-
-              echo "Finished running onCreate script"
-              EOF
-
-      OnStart:
-        - Content:
-            Fn::Base64: |
-              #!/bin/bash
-
-              sudo -H -i -u ec2-user bash << EOF
-              echo "Creating symlinks"
-              [ ! -L "/home/ec2-user/.torch" ] && ln -s /home/ec2-user/SageMaker/.torch /home/ec2-user/.torch
-              [ ! -L "/home/ec2-user/.fastai" ] && ln -s /home/ec2-user/SageMaker/.fastai /home/ec2-user/.fastai
-
-              echo "Install a new kernel for fastai with name 'Python 3'"
-              source /home/ec2-user/anaconda3/bin/activate pytorch_p36
-              python -m ipykernel install --name 'fastai' --display-name 'Python 3' --user
-
-              # uncomment if you want to update PyTorch on every start
-              #echo "Update PyTorch library"
-              #conda install -y pytorch torchvision -c pytorch
-
-              echo "Update fastai library"
-              conda install -y fastai -c fastai
-
-              echo "Install jupyter nbextension"
-              source /home/ec2-user/anaconda3/bin/activate JupyterSystemEnv
-              pip install jupyter_contrib_nbextensions
-              jupyter contrib nbextensions install --user
-
-              echo "Restarting jupyter notebook server"
-              pkill -f jupyter-notebook
-
-              echo "Getting latest version of fastai course"
-              cd /home/ec2-user/SageMaker/bldg-heights-aws-hackathon
-              git pull
-
-              echo "Finished running onStart script"
-              EOF
+#  BldgHeightNbLifecycleConfig:
+#    Type: "AWS::SageMaker::NotebookInstanceLifecycleConfig"
+#    Properties:
+#      OnCreate:
+#        - Content:
+#            Fn::Base64: |
+#              #!/bin/bash
+#              sudo -H -i -u ec2-user bash << EOF
+#              # create symlinks to EBS volume
+#              echo "Creating symlinks"
+#              mkdir /home/ec2-user/SageMaker/.torch && ln -s /home/ec2-user/SageMaker/.torch /home/ec2-user/.torch
+#              mkdir /home/ec2-user/SageMaker/.fastai && ln -s /home/ec2-user/SageMaker/.fastai /home/ec2-user/.fastai
+#
+#              # clone the course notebooks
+#              echo "Clone the course repo"
+#              git clone https://github.com/lcheng6/bldg-heights-aws-hackathon.git /home/ec2-user/SageMaker/bldg-heights-aws-hackathon
+#
+#              echo "Finished running onCreate script"
+#              EOF
+#
+#      OnStart:
+#        - Content:
+#            Fn::Base64: |
+#              #!/bin/bash
+#
+#              sudo -H -i -u ec2-user bash << EOF
+#              echo "Creating symlinks"
+#              [ ! -L "/home/ec2-user/.torch" ] && ln -s /home/ec2-user/SageMaker/.torch /home/ec2-user/.torch
+#              [ ! -L "/home/ec2-user/.fastai" ] && ln -s /home/ec2-user/SageMaker/.fastai /home/ec2-user/.fastai
+#
+#              echo "Install a new kernel for fastai with name 'Python 3'"
+#              source /home/ec2-user/anaconda3/bin/activate pytorch_p36
+#              python -m ipykernel install --name 'fastai' --display-name 'Python 3' --user
+#
+#              # uncomment if you want to update PyTorch on every start
+#              #echo "Update PyTorch library"
+#              #conda install -y pytorch torchvision -c pytorch
+#
+#              echo "Update fastai library"
+#              conda install -y fastai -c fastai
+#
+#              echo "Install jupyter nbextension"
+#              source /home/ec2-user/anaconda3/bin/activate JupyterSystemEnv
+#              pip install jupyter_contrib_nbextensions
+#              jupyter contrib nbextensions install --user
+#
+#              echo "Restarting jupyter notebook server"
+#              pkill -f jupyter-notebook
+#
+#              echo "Getting latest version of fastai course"
+#              cd /home/ec2-user/SageMaker/bldg-heights-aws-hackathon
+#              git pull
+#
+#              echo "Finished running onStart script"
+#              EOF
 
   BldgHeightNotebookInstance:
     Type: "AWS::SageMaker::NotebookInstance"

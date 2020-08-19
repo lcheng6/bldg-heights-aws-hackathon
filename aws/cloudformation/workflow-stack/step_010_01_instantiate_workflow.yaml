@@ -150,18 +150,18 @@ Resources:
 #        Environment: !Ref Environment
 #        SubnetsForDBSubnetGroups: !FindInMap [GlobalParams, Deployment, SubnetsForRDSSubnetGroup]
 
-  SakemakerTemplate:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL:
-        !Sub ${CFTemplateS3Path}/step_030_08_sagemaker_deployment.yaml
-      Parameters:
-        WFName: !Ref WFName
-        CFTemplateS3Path: !Ref CFTemplateS3Path
-        Environment: !Ref Environment
-        SageMakerSubnet: !FindInMap [GlobalParams, Deployment, SagemakerSubnet]
-        VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
-        SageMakerIamRoleArn: !GetAtt WorkflowIAMRolesTemplate.Outputs.SageMakerIamRoleArn
-        SageMakerSecurityGroupIds: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.SageMakerSecurityGroup
+#  SakemakerTemplate:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL:
+#        !Sub ${CFTemplateS3Path}/step_030_08_sagemaker_deployment.yaml
+#      Parameters:
+#        WFName: !Ref WFName
+#        CFTemplateS3Path: !Ref CFTemplateS3Path
+#        Environment: !Ref Environment
+#        SageMakerSubnet: !FindInMap [GlobalParams, Deployment, SagemakerSubnet]
+#        VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
+#        SageMakerIamRoleArn: !GetAtt WorkflowIAMRolesTemplate.Outputs.SageMakerIamRoleArn
+#        SageMakerSecurityGroupIds: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.SageMakerSecurityGroup
 
 
