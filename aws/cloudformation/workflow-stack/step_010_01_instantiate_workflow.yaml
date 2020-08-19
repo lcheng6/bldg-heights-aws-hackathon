@@ -46,7 +46,7 @@ Resources:
         !Sub ${CFTemplateS3Path}/step_020_01_security_groups.yaml
       Parameters:
         WFName: !Ref WFName
-        Environment: dev
+        Environment: !Ref Environment
         CFTemplateS3Path: !Ref CFTemplateS3Path
         VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
         VpcCidr: !FindInMap [GlobalParams, Vpc, VpcCidr]
@@ -60,7 +60,7 @@ Resources:
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
-        Environment: dev
+        Environment: !Ref Environment
 
   ECRReposTemplate:
     Type: AWS::CloudFormation::Stack
@@ -70,7 +70,7 @@ Resources:
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
-        Environment: dev
+        Environment: !Ref Environment
 
   # ALB with pgadmin service
   #  ElasticLoadBalancersTemplate:
@@ -81,7 +81,7 @@ Resources:
   #      Parameters:
   #        WFName: !Ref WFName
   #        CFTemplateS3Path: !Ref CFTemplateS3Path
-  #        Environment: dev
+  #        Environment: !Ref Environment
 
   #create the ECR Fargate cluster to run any thing significant
   #at the present time, we will only create a fargate cluster to run any data processing job
@@ -93,7 +93,7 @@ Resources:
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
-        Environment: dev
+        Environment: !Ref Environment
 
   ECRTasksAndServicesTemplate:
     Type: AWS::CloudFormation::Stack
@@ -103,7 +103,7 @@ Resources:
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
-        Environment: dev
+        Environment: !Ref Environment
 
   RDSDatabaseTemplate:
     Type: AWS::CloudFormation::Stack
@@ -113,7 +113,7 @@ Resources:
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
-        Environment: dev
+        Environment: !Ref Environment
         RDSDBName: "{{resolve:secretsmanager:UrbanInstituteDevRDSParameter:SecretString:POSTGRES_DBNAME}}"
         RDSDBUsername: "{{resolve:secretsmanager:UrbanInstituteDevRDSParameter:SecretString:POSTGRES_USERNAME}}"
         RDSDBPassword: "{{resolve:secretsmanager:UrbanInstituteDevRDSParameter:SecretString:POSTGRES_PASSWORD}}"
@@ -121,6 +121,8 @@ Resources:
         RDSPostgresSecurityGroup: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.RDSDatabaseSecurityGroup
         RDSPostgresEnhancedMonitoringRoleArn: !GetAtt WorkflowIAMRolesTemplate.Outputs.RDSPostgresEnhancedMonitoringRoleArn
 
+# Data loader EC2 template
+# use this micro/small ec2 to run long running SQL statements without
   DataloaderEC2Template:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -129,13 +131,14 @@ Resources:
       Parameters:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
-        Environment: dev
+        Environment: !Ref Environment
         DataloaderIamInstanceProfile: !GetAtt WorkflowIAMRolesTemplate.Outputs.DataloaderInstanceProfile
         DataLoaderEC2SecurityGroup: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.DataLoaderEC2SecurityGroup
         DataloaderSubnet: !FindInMap [GlobalParams, Deployment, DataloaderEC2Subnet]
         VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
 
-
+#  Redshift currently doesn't represent any value.  It's unlikely that it will increase speed of
+#  geometry based selection and merging, as geometry type can not yet be used as a key
 #  RedshiftTemplate:
 #    Type: AWS::CloudFormation::Stack
 #    Properties:
@@ -144,5 +147,19 @@ Resources:
 #      Parameters:
 #        WFName: !Ref WFName
 #        CFTemplateS3Path: !Ref CFTemplateS3Path
-#        Environment: dev
+#        Environment: !Ref Environment
 #        SubnetsForDBSubnetGroups: !FindInMap [GlobalParams, Deployment, SubnetsForRDSSubnetGroup]
+
+  SakemakerTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub ${CFTemplateS3Path}/step_030_08_sagemaker_deployment.yaml
+      Parameters:
+        WFName: !Ref WFName
+        CFTemplateS3Path: !Ref CFTemplateS3Path
+        Environment: !Ref Environment
+        DataloaderSubnet: !FindInMap [GlobalParams, Deployment, DataloaderEC2Subnet]
+        VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
+
+
