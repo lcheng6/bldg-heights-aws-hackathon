@@ -77,6 +77,19 @@ Resources:
               Service:
                 - monitoring.rds.amazonaws.com
 
+  SageMakerIamRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
 Outputs:
 
   DataloaderInstanceRole:
@@ -103,3 +116,8 @@ Outputs:
     Value: !GetAtt RDSPostgresEnhancedMonitoringRole.Arn
     Export:
       Name: !Sub "role-${WFName}-${Environment}-enhancedpostgressmonitoringarn"
+
+  SageMakerIamRoleArn:
+    Value: !GetAtt SageMakerIamRole.Arn
+    Export:
+      Name: !Sub "role-${WFName}-${Environment}-sagemakerarn"

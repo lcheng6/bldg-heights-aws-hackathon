@@ -28,13 +28,14 @@ Mappings:
       PrivateSubnets: "subnet-0f2296d1facaad0d1,subnet-076aed91c3669be38,subnet-04b284cd9799f101b"
       PublicSubnets: "subnet-07d1e64a658e5d40c,subnet-0ecb2878f52b8d153,subnet-00f970f7a1365d359"
     Deployment:
-      DataloaderEC2Subnet: "subnet-07d1e64a658e5d40c"
+      DataloaderEC2Subnet: "subnet-07d1e64a658e5d40c" #one of the public subnet
       SubnetsForAuroraServerlessRDSSubnetGroup: "subnet-0f2296d1facaad0d1,subnet-076aed91c3669be38,subnet-04b284cd9799f101b"
       #although Aurora Serverless can be deployed in public subnet, it can't have a public IP address see
       #https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations
       #so if public access is required, it is necessary to provide a proxy
       SubnetsForRedshiftSubnetGroup: "subnet-07d1e64a658e5d40c,subnet-0ecb2878f52b8d153,subnet-00f970f7a1365d359" #the public subnets
       RDSPostgresSubnets: "subnet-07d1e64a658e5d40c,subnet-0ecb2878f52b8d153,subnet-00f970f7a1365d359" #the public subnets
+      SagemakerSubnet: "subnet-07d1e64a658e5d40c" #one of the public subnet
 
 
 Resources:
@@ -50,7 +51,6 @@ Resources:
         CFTemplateS3Path: !Ref CFTemplateS3Path
         VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
         VpcCidr: !FindInMap [GlobalParams, Vpc, VpcCidr]
-
 
   WorkflowIAMRolesTemplate:
     Type: AWS::CloudFormation::Stack
@@ -159,7 +159,9 @@ Resources:
         WFName: !Ref WFName
         CFTemplateS3Path: !Ref CFTemplateS3Path
         Environment: !Ref Environment
-        DataloaderSubnet: !FindInMap [GlobalParams, Deployment, DataloaderEC2Subnet]
+        SageMakerSubnet: !FindInMap [GlobalParams, Deployment, SagemakerSubnet]
         VpcId: !FindInMap [GlobalParams, Vpc, VpcId]
+        SageMakerIamRoleArn: !GetAtt WorkflowIAMRolesTemplate.Outputs.SageMakerIamRoleArn
+        SageMakerSecurityGroupIds: !GetAtt WorkflowSecurityGroupsTemplate.Outputs.SageMakerSecurityGroup
 
 

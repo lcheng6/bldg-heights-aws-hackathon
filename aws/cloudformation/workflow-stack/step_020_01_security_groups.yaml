@@ -79,6 +79,18 @@ Resources:
           FromPort: 80
       VpcId: !Ref VpcId
 
+  SageMakerSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "sg.${WFName}.${Environment}.sagemaker.${AWS::Region}"
+      GroupDescription: Urban Institute SageMaker Security Group
+      SecurityGroupIngress:
+        - ToPort: 443
+          IpProtocol: tcp
+          CidrIp: !Ref VpcCidr
+          FromPort: 443
+      VpcId: !Ref VpcId
+
 
 Outputs:
   DataJobFargateTaskSecurityGroup:
@@ -105,3 +117,8 @@ Outputs:
     Value: !GetAtt PgAdminServiceSecurityGroup.GroupId
     Export:
       Name: !Sub "sg-${WFName}-${Environment}-pgadminservice-${AWS::Region}"
+
+  SageMakerSecurityGroup:
+    Value: !GetAtt SageMakerSecurityGroup.GroupId
+    Export:
+      Name: !Sub "sg-${WFName}-${Environment}-sagemaker-${AWS::Region}"

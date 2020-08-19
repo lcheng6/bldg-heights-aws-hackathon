@@ -1,0 +1,134 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Urban Insitute Workflow RDS Database (Aurora, or RDS Postgres)
+  Currently just instantiating Serverless RDS Postgres DB, as there is really no other choice
+
+Parameters:
+  WFName:
+    Type: String
+
+  CFTemplateS3Path:
+    Type: String
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+
+  SageMakerSubnet:
+    Type: AWS::EC2::Subnet::Id
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+
+  SageMakerIamRoleArn:
+    Type: String
+
+  SageMakerSecurityGroupIds:
+    Type: CommaDelimitedList
+
+  SageMakerInstanceType:
+    Type: String
+    Default: ml.t3.medium
+    AllowedValues:
+      - ml.t3.medium
+      - ml.t3.large
+      - ml.t3.xlarge
+      - ml.t3.2xlarge
+      - ml.m5.large
+      - ml.m5.xlarge
+      - ml.p2.xlarge
+      - ml.p3.2xlarge
+    Description: Enter instance a valid instance type
+
+  SageMakerVolumeSize:
+    Type: Number
+    Default: 50
+    MinValue: 5
+    MaxValue: 16384
+    ConstraintDescription: Must be an integer between 5 (GB) and 16384 (16 TB).
+    Description: Enter the size of the EBS volume in GB.
+
+  SageMakerNotebookName:
+    Type: String
+    Default: bldg-heights
+
+Resources:
+
+
+  BldgHeightNbLifecycleConfig:
+    Type: "AWS::SageMaker::NotebookInstanceLifecycleConfig"
+    Properties:
+      OnCreate:
+        - Content:
+            Fn::Base64: |
+              #!/bin/bash
+              sudo -H -i -u ec2-user bash << EOF
+              # create symlinks to EBS volume
+              echo "Creating symlinks"
+              mkdir /home/ec2-user/SageMaker/.torch && ln -s /home/ec2-user/SageMaker/.torch /home/ec2-user/.torch
+              mkdir /home/ec2-user/SageMaker/.fastai && ln -s /home/ec2-user/SageMaker/.fastai /home/ec2-user/.fastai
+
+              # clone the course notebooks
+              echo "Clone the course repo"
+              git clone https://github.com/lcheng6/bldg-heights-aws-hackathon.git /home/ec2-user/SageMaker/bldg-heights-aws-hackathon
+
+              echo "Finished running onCreate script"
+              EOF
+
+      OnStart:
+        - Content:
+            Fn::Base64: |
+              #!/bin/bash
+
+              sudo -H -i -u ec2-user bash << EOF
+              echo "Creating symlinks"
+              [ ! -L "/home/ec2-user/.torch" ] && ln -s /home/ec2-user/SageMaker/.torch /home/ec2-user/.torch
+              [ ! -L "/home/ec2-user/.fastai" ] && ln -s /home/ec2-user/SageMaker/.fastai /home/ec2-user/.fastai
+
+              echo "Install a new kernel for fastai with name 'Python 3'"
+              source /home/ec2-user/anaconda3/bin/activate pytorch_p36
+              python -m ipykernel install --name 'fastai' --display-name 'Python 3' --user
+
+              # uncomment if you want to update PyTorch on every start
+              #echo "Update PyTorch library"
+              #conda install -y pytorch torchvision -c pytorch
+
+              echo "Update fastai library"
+              conda install -y fastai -c fastai
+
+              echo "Install jupyter nbextension"
+              source /home/ec2-user/anaconda3/bin/activate JupyterSystemEnv
+              pip install jupyter_contrib_nbextensions
+              jupyter contrib nbextensions install --user
+
+              echo "Restarting jupyter notebook server"
+              pkill -f jupyter-notebook
+
+              echo "Getting latest version of fastai course"
+              cd /home/ec2-user/SageMaker/bldg-heights-aws-hackathon
+              git pull
+
+              echo "Finished running onStart script"
+              EOF
+
+  BldgHeightNotebookInstance:
+    Type: "AWS::SageMaker::NotebookInstance"
+    Properties:
+      InstanceType: !Ref SageMakerInstanceType
+#      LifecycleConfigName: !GetAtt FastaiNbLifecycleConfig.NotebookInstanceLifecycleConfigName
+      DefaultCodeRepository: https://github.com/lcheng6/bldg-heights-aws-hackathon.git
+      DirectInternetAccess: Enabled
+      NotebookInstanceName: !Sub "${WFName}-${SageMakerNotebookName}"
+      RoleArn: !Ref SageMakerIamRoleArn
+      SubnetId: !Ref SageMakerSubnet
+      SecurityGroupIds: !Ref SageMakerSecurityGroupIds
+      VolumeSizeInGB: !Ref SageMakerVolumeSize
+
+Outputs:
+  BldgHeightNotebookInstanceId:
+    Value: !Ref BldgHeightNotebookInstance
+
+  BldgHeightNotebookInstanceName:
+    Value: !GetAtt BldgHeightNotebookInstance.NotebookInstanceName
