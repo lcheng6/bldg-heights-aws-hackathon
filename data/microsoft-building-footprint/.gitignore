@@ -2,3 +2,4 @@
 #gets put into my repo
 *.geojson
 *.zip
+*.sql
