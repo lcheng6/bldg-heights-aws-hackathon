@@ -14,8 +14,7 @@ def process_single_feature(feature, statename):
 def form_insert_into_statement(dbname):
     sql_statement = f"""
 insert into {dbname} (State, Border)
-VALUES 
-    """
+VALUES """
     return sql_statement
 
 def form_single_value_sql_statement(processed_feature):
@@ -53,8 +52,9 @@ def convert_single_state_file_from_json_to_sql(state="Virginia", max_rows_per_it
                 single_feature_sql_statement = form_single_value_sql_statement(single_processed_feature)
                 sql_statement_arrays.append(single_feature_sql_statement)
 
-                sql_complete_statement = sql_preamble + "\n" + (",".join(sql_statement_arrays)) + ';' + "\n"
-                traing_sql_output.write(sql_complete_statement)
+
+            sql_complete_statement = sql_preamble + "\n" + (",".join(sql_statement_arrays)) + ';' + "\n"
+            traing_sql_output.write(sql_complete_statement)
 
         # for feature in features:
         #     processed_feature_example = process_single_feature(feature, "Virginia")
