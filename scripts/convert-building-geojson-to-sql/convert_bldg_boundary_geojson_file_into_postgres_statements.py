@@ -2,6 +2,7 @@
 #the original AWS hackathon.  As this file make use of EGID, ROOF_TYPE etc, it's not useful for the
 #Microsoft US Building dataset.
 import json
+import argparse
 
 def process_single_feature(feature):
     processed_feature = {}
