@@ -3,6 +3,6 @@
 .vscode/settings.json
 .idea/
 .DS_Store
-venv/*
+venv
 .venv/
 lidar-sql-inserts/

@@ -1,3 +1,6 @@
+#this particular python is only useful for the DC building data which was used during
+#the original AWS hackathon.  As this file make use of EGID, ROOF_TYPE etc, it's not useful for the
+#Microsoft US Building dataset.
 import json
 
 def process_single_feature(feature):
@@ -60,7 +63,7 @@ VALUES (
     """
     return sql_statement
 
-traing_sql_output = open("../data/dc_building_sql_statements_training.sql", "w")
+traing_sql_output = open("../../data/dc_building_sql_statements_training.sql", "w")
 
 with open('../data/DC_buildings_Footprint_4326_training.geojson') as json_file:
     data = json.load(json_file)
@@ -76,7 +79,7 @@ with open('../data/DC_buildings_Footprint_4326_training.geojson') as json_file:
         traing_sql_output.write(sql_example)
 
 
-test_sql_output = open("../data/dc_building_sql_statements_test.sql", "w")
+test_sql_output = open("../../data/dc_building_sql_statements_test.sql", "w")
 
 with open('../data/DC_buildings_Footprint_4326_test.geojson') as json_file:
     data = json.load(json_file)
