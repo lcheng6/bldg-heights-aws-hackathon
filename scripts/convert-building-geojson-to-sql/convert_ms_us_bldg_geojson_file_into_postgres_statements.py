@@ -42,7 +42,7 @@ def convert_single_state_file_from_json_to_sql(state="Virginia", max_rows_per_it
         # print ("count of features: ", len(features))
 
         feature_total_length = len(features)
-        sql_preamble = form_insert_into_statement("default")
+        sql_preamble = form_insert_into_statement("ms_building_borders")
         for feature_idx_start in range (0, feature_total_length, max_rows_per_iteration):
             feature_idx_end = min(feature_idx_start + max_rows_per_iteration, feature_total_length)
             features_subarray = features[feature_idx_start: feature_idx_end]
