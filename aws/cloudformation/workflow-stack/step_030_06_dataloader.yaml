@@ -71,21 +71,19 @@ Resources:
         - AMI
         - !Ref AWS::Region
         - ubuntu1804
-      InstanceType: t3a.micro
+      InstanceType: t3a.xlarge
       KeyName: keypair-urbaninst-dev-ec2
       NetworkInterfaces:
         - NetworkInterfaceId: !Ref DataloaderEC2PublicENI
           DeviceIndex: '0'
       BlockDeviceMappings:
-        - DeviceName: "/dev/xvda"
+        - DeviceName: "/dev/sda1"
           Ebs:
             VolumeType: gp2
             DeleteOnTermination: true
             VolumeSize: 25
       Tags:
-        - Key: Project
-          Value: census
         - Key: VPC
           Value: !Ref VpcId
-  #      - Key: Name
-  #        Value: !Join [ "-", [ !Ref VPCName, "V"]]
+        - Key: Name
+          Value: Ubuntu Data Loader

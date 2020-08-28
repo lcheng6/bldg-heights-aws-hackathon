@@ -30,7 +30,7 @@ def insert_geojson_into_db(state):
   POSTGRES_PASSWORD = dbSecretValuesJson['POSTGRES_PASSWORD'] ## CHANGE THIS TO YOUR PANOPLY/POSTGRES PASSWORD POSTGRES_DBNAME = 'database' ## CHANGE THIS TO YOUR DATABASE NAME
   POSTGRES_DBNAME = dbSecretValuesJson['POSTGRES_DBNAME']
 
-  os.system(f"PGPASSWORD={POSTGRES_PASSWORD} psql -h {POSTGRES_ADDRESS} -U {POSTGRES_USERNAME} -p {POSTGRES_PORT} {POSTGRES_DBNAME} -f ./../data/microsoft-building-footprint/{statename_without_spaces}.sql")
+  os.system(f"PGPASSWORD={POSTGRES_PASSWORD} psql -h {POSTGRES_ADDRESS} -U {POSTGRES_USERNAME} -p {POSTGRES_PORT} {POSTGRES_DBNAME} -f ../../data/microsoft-building-footprint/{statename_without_spaces}.sql")
   pass
 
 def delete_zip_geojson_and_sql_files(state):
