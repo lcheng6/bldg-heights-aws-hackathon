@@ -15,7 +15,7 @@ def unzip_building_zip_file(state):
   pass
 
 def convert_geojson_to_sql_file(state):
-  os.system(f"python3 ./convert_ms_us_bldg_geojson_file_into_postgres_statements.py --state {state}")
+  os.system(f"python3 ./convert_ms_us_bldg_geojson_file_into_postgres_statements.py --state '{state}'")
   pass
 
 def insert_geojson_into_db(state):
