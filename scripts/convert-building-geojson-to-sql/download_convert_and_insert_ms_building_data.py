@@ -51,5 +51,5 @@ with open("../../data/microsoft-building-footprint/ms-us-building-listing.json")
     insert_geojson_into_db(state=state)
     delete_zip_geojson_and_sql_files(state=state)
 
-    if (state == "Alaska"):
-      break
+    # if (state == "Alaska"):
+    #   break
