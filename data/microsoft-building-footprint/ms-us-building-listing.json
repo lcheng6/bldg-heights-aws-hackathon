@@ -1,13 +1,13 @@
 {
   "Alabama": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Alabama.zip",
-  "Alaska": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Arizona.zip",
+  "Alaska": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Alaska.zip",
   "Arizona": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Arizona.zip",
   "Arkansas": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Arkansas.zip",
   "California": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/California.zip",
   "Colorado": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Colorado.zip",
   "Connecticut": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Connecticut.zip",
   "Delaware": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Delaware.zip",
-  "District Of Columbia": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/DistrictOfColumbia.zip",
+  "District of Columbia": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/DistrictofColumbia.zip",
   "Florida": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Florida.zip",
   "Georgia": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Georgia.zip",
   "Hawaii": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Hawaii.zip",
@@ -49,5 +49,5 @@
   "Washington": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Washington.zip",
   "West Virginia": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/WestVirginia.zip",
   "Wisconsin": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wisconsin.zip",
-  "Wyoming": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wyoming.zip",
+  "Wyoming": "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wyoming.zip"
 }

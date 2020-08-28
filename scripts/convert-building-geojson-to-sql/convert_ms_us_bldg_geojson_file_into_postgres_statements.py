@@ -34,9 +34,10 @@ def form_single_value_sql_statement(processed_feature):
 
 def convert_single_state_file_from_json_to_sql(state="Virginia", max_rows_per_iteration=5000):
 
-    traing_sql_output = open("../../data/microsoft-building-footprint/Virginia.sql", "w")
+    statename_without_spaces = "".join(state.split())
+    traing_sql_output = open(f"../../data/microsoft-building-footprint/{statename_without_spaces}.sql", "w")
 
-    with open('../../data/microsoft-building-footprint/Virginia.geojson') as json_file:
+    with open(f"../../data/microsoft-building-footprint/{statename_without_spaces}.geojson") as json_file:
         data = json.load(json_file)
         features = data["features"]
         # print ("count of features: ", len(features))
@@ -64,4 +65,9 @@ def convert_single_state_file_from_json_to_sql(state="Virginia", max_rows_per_it
         #     traing_sql_output.write(sql_example)
 
 
-convert_single_state_file_from_json_to_sql()
+parser = argparse.ArgumentParser(description="Process some geojson into sql statements")
+parser.add_argument('--state', help='foo help')
+args = parser.parse_args()
+statename = args.state
+
+convert_single_state_file_from_json_to_sql(state=statename)
