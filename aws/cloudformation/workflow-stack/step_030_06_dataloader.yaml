@@ -71,7 +71,7 @@ Resources:
         - AMI
         - !Ref AWS::Region
         - ubuntu1804
-      InstanceType: t3a.xlarge
+      InstanceType: t3a.medium
       KeyName: keypair-urbaninst-dev-ec2
       NetworkInterfaces:
         - NetworkInterfaceId: !Ref DataloaderEC2PublicENI
